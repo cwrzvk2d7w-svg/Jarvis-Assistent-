@@ -1,14 +1,95 @@
-J.A.R.V.I.S.
-BEREIT
-PERSÖNLICHER KI-ASSISTENT · PROTOTYP
-
-
-
-Bereit, wenn du es bist.
-🎙 Mit JARVIS sprechen
-Stimme aus
-JARVIS · ANTWORT
-Guten Abend. Ich bin JARVIS – dein persönlicher Assistent. Tippe eine Nachricht ein oder starte die Spracheingabe.
-
-Senden
-Dies ist ein erster Prototyp. Antworten sind noch lokal und nicht mit einer Online-KI verbunden. Mikrofonzugriff hängt vom Browser und der sicheren Verbindung ab.
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050b18">
+<title>JARVIS</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;background:radial-gradient(circle,#102c50,#030711 75%);
+color:#e5faff;font-family:Arial,sans-serif;text-align:center;
+min-height:100vh;padding:25px 15px}
+h1{letter-spacing:8px;color:#76edff}
+.status{color:#64f7cb;font-size:12px;letter-spacing:3px}
+.core{
+width:220px;height:220px;border-radius:50%;
+border:2px solid #61eaff;margin:65px auto 35px;
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 0 35px #148dff66;position:relative;
+animation:glow 3s infinite}
+.core:before{content:"";position:absolute;inset:18px;
+border:2px dashed #64eaff;border-radius:50%;
+animation:rotate 18s linear infinite}
+.orb{width:85px;height:85px;border-radius:50%;
+background:radial-gradient(circle at 30% 25%,white,#63eaff 25%,#0872cc 65%,#06142a);
+box-shadow:0 0 40px #39dfff}
+@keyframes rotate{to{transform:rotate(360deg)}}
+@keyframes glow{50%{box-shadow:0 0 55px #148dffbb}}
+button,input{
+border-radius:13px;padding:14px;margin:5px;
+font-size:16px}
+button{background:#104b83;color:white;border:1px solid #65eaff}
+input{width:65%;background:#061326;color:white;border:1px solid #4384aa}
+.panel{background:#061326cc;border:1px solid #28638a;
+border-radius:15px;padding:18px;margin-top:25px;line-height:1.5}
+#antwort{min-height:35px}
+</style>
+</head>
+<body>
+<h1>J.A.R.V.I.S.</h1>
+<div class="status" id="status">SYSTEM BEREIT</div>
+<div class="core" id="core"><div class="orb"></div></div>
+<button onclick="sprechen()">🎙 Mit JARVIS sprechen</button>
+<button onclick="stoppen()">Stimme aus</button>
+<div class="panel">
+<strong>JARVIS · ANTWORT</strong>
+<p id="antwort">Guten Abend. Ich bin JARVIS. Wie kann ich dir helfen?</p>
+<form onsubmit="senden(event)">
+<input id="eingabe" placeholder="Schreibe eine Nachricht..." autocomplete="off">
+<button type="submit">Senden</button>
+</form>
+</div>
+<script>
+const antwort=document.getElementById('antwort');
+const status=document.getElementById('status');
+function stimme(text){
+if(!('speechSynthesis'in window))return;
+speechSynthesis.cancel();
+let u=new SpeechSynthesisUtterance(text);
+u.lang='de-DE';u.rate=0.9;u.pitch=0.8;
+speechSynthesis.speak(u);
+}
+function senden(e){
+e.preventDefault();
+let q=document.getElementById('eingabe').value.trim();
+if(!q)return;
+document.getElementById('eingabe').value='';
+let s=q.toLowerCase(),a;
+if(s.includes('hallo'))a='Guten Tag. JARVIS ist einsatzbereit.';
+else if(s.includes('wer bist du'))a='Ich bin JARVIS, dein persönlicher Assistent.';
+else if(s.includes('uhrzeit'))a='Es ist '+new Date().toLocaleTimeString('de-DE')+'.';
+else if(s.includes('datum'))a='Heute ist '+new Date().toLocaleDateString('de-DE')+'.';
+else if(s.includes('lernen'))a='Lernmodus bereit. Welches Thema möchtest du üben?';
+else a='Ich habe deine Nachricht erhalten. Eine echte KI-Anbindung wird in einem späteren Schritt eingerichtet.';
+antwort.textContent=a;stimme(a);
+}
+function sprechen(){
+let R=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!R){antwort.textContent='Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutze das Textfeld.';return;}
+let r=new R();r.lang='de-DE';
+r.onstart=()=>status.textContent='ICH HÖRE ZU';
+r.onresult=e=>{
+document.getElementById('eingabe').value=e.results[0][0].transcript;
+senden(new EventSubmit());
+};
+r.onerror=()=>{status.textContent='SYSTEM BEREIT';antwort.textContent='Bitte prüfe die Mikrofonberechtigung.'};
+r.onend=()=>status.textContent='SYSTEM BEREIT';
+r.start();
+}
+function EventSubmit(){this.preventDefault=function(){}}
+function stoppen(){if('speechSynthesis'in window)speechSynthesis.cancel()}
+</script>
+</body>
+</html>
