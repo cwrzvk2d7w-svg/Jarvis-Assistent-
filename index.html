@@ -80,9 +80,13 @@ let R=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!R){antwort.textContent='Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutze das Textfeld.';return;}
 let r=new R();r.lang='de-DE';
 r.onstart=()=>status.textContent='ICH HÖRE ZU';
-r.onresult=e=>{
-document.getElementById('eingabe').value=e.results[0][0].transcript;
-senden(new EventSubmit());
+r.onresult = e => {
+    const erkannterText = e.results[0][0].transcript;
+    document.getElementById('eingabe').value = erkannterText;
+
+    senden({
+        preventDefault: function() {}
+    });
 };
 r.onerror=()=>{status.textContent='SYSTEM BEREIT';antwort.textContent='Bitte prüfe die Mikrofonberechtigung.'};
 r.onend=()=>status.textContent='SYSTEM BEREIT';
