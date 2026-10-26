@@ -92,7 +92,6 @@ r.onerror=()=>{status.textContent='SYSTEM BEREIT';antwort.textContent='Bitte prÃ
 r.onend=()=>status.textContent='SYSTEM BEREIT';
 r.start();
 }
-function EventSubmit(){this.preventDefault=function(){}}
 function stoppen(){if('speechSynthesis'in window)speechSynthesis.cancel()}
 </script>
 </body>
