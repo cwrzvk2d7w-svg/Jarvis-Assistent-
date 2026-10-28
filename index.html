@@ -59,22 +59,42 @@ if(!('speechSynthesis'in window))return;
 speechSynthesis.cancel();
 let u=new SpeechSynthesisUtterance(text);
 u.lang='de-DE';u.rate=0.9;u.pitch=0.8;
-speechSynthesis.speak(u);
-}
-function senden(e){
-e.preventDefault();
-let q=document.getElementById('eingabe').value.trim();
-if(!q)return;
-document.getElementById('eingabe').value='';
-let s=q.toLowerCase(),a;
-if(s.includes('hallo'))a='Guten Tag. JARVIS ist einsatzbereit.';
-else if(s.includes('wer bist du'))a='Ich bin JARVIS, dein persönlicher Assistent.';
-else if(s.includes('uhrzeit'))a='Es ist '+new Date().toLocaleTimeString('de-DE')+'.';
-else if(s.includes('datum'))a='Heute ist '+new Date().toLocaleDateString('de-DE')+'.';
-else if(s.includes('lernen'))a='Lernmodus bereit. Welches Thema möchtest du üben?';
-else a='Ich habe deine Nachricht erhalten. Eine echte KI-Anbindung wird in einem späteren Schritt eingerichtet.';
-antwort.textContent=a;stimme(a);
-}
+speechSynthesis.speak(
+async function senden(e){
+    e.preventDefault();
+    const feld = document.getElementById('eingabe');
+    const q = feld.value.trim();
+    if(!q) return;
+    feld.value = '';
+    antwort.textContent = 'JARVIS denkt nach ...';
+    status.textContent = 'KI VERARBEITET ANFRAGE';
+    try {
+        const antwortServer = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: q
+            })
+        });
+        const daten = await antwortServer.json();
+        if(!antwortServer.ok) {
+            throw new Error(daten.error || 'Fehler bei der KI-Anfrage.');
+        }
+        const text = daten.answer;
+        if(!text) {
+            throw new Error('Der Server hat keine Antwort geliefert.');
+        }
+        antwort.textContent = text;
+        stimme(text);
+    } catch (fehler) {
+        console.error(fehler);
+        antwort.textContent =
+            'Die Verbindung zur KI ist fehlgeschlagen. Bitte prüfe die Server-Konfiguration.';
+    } finally {
+        status.textContent = 'SYSTEM BEREIT';
+    }
 function sprechen(){
 let R=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!R){antwort.textContent='Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutze das Textfeld.';return;}
