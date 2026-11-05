@@ -1,14 +1,15 @@
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Nur POST erlaubt." });
   }
 
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "Der OpenAI-Schlüssel ist auf dem Server noch nicht eingerichtet."
+        error: "Der Gemini-Schlüssel ist nicht eingerichtet."
       });
     }
 
@@ -20,42 +21,53 @@ export default async function handler(req, res) {
 
     if (frage.length > 2000) {
       return res.status(400).json({
-        error: "Deine Nachricht ist zu lang. Bitte kürze sie auf 2000 Zeichen."
+        error: "Deine Nachricht ist zu lang."
       });
     }
 
-    const openaiAntwort = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        instructions: "Du bist JARVIS, ein freundlicher, hilfreicher persönlicher Assistent. Antworte auf Deutsch, klar und verständlich.",
-        input: frage,
-        max_output_tokens: 300
-      })
-    });
+    const antwort = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{
+              text: "Du bist JARVIS, ein freundlicher, hilfreicher persönlicher Assistent. Antworte auf Deutsch, klar und verständlich."
+            }]
+          },
+          contents: [{
+            role: "user",
+            parts: [{ text: frage }]
+          }],
+          generationConfig: {
+            maxOutputTokens: 300
+          }
+        })
+      }
+    );
 
-    const daten = await openaiAntwort.json();
+    const daten = await antwort.json();
 
-    if (!openaiAntwort.ok) {
-      console.error("OpenAI API-Fehler:", daten.error?.message || "Unbekannter Fehler");
+    if (!antwort.ok) {
+      console.error("Gemini API-Fehler:", daten.error?.message);
       return res.status(502).json({
-        error: "Die KI konnte gerade nicht antworten. Bitte versuche es später erneut."
+        error: "Gemini konnte gerade nicht antworten."
       });
     }
 
-    const text = (daten.output || [])
-      .flatMap(element => element.content || [])
-      .filter(element => element.type === "output_text")
-      .map(element => element.text)
-      .join("\n");
+    const text = (daten.candidates?.[0]?.content?.parts || [])
+      .map(teil => teil.text || "")
+      .join("\n")
+      .trim();
 
     return res.status(200).json({
       answer: text || "Ich konnte leider keine Antwort erzeugen."
     });
+
   } catch (fehler) {
     console.error("JARVIS-Fehler:", fehler.message);
     return res.status(500).json({
