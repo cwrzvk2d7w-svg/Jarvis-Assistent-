@@ -1,0 +1,8 @@
+name = "jarvis-assistent"
+main = "src/index.js"
+compatibility_date = "2026-11-06"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
