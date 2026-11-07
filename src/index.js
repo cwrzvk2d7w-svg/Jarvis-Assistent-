@@ -3,7 +3,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // KI-Schnittstelle
     if (url.pathname === "/api/chat") {
+
       if (request.method !== "POST") {
         return Response.json(
           { error: "Nur POST erlaubt." },
@@ -73,14 +75,22 @@ export default {
 
         const data = await response.json();
 
+        // Ausführliche Gemini-Fehlerbehandlung
         if (!response.ok) {
-  console.error("Gemini-Fehler:", data.error?.return Response.json(
-  {
-    error: `Gemini API Fehler (${response.status}): ${data.error?.message || "Unbekannter Fehler"}`
-  },
-  { status: 502 }
-);
+          const fehler =
+            data.error?.message || "Unbekannter Gemini-Fehler";
 
+          console.error("Gemini-Fehler:", fehler);
+
+          return Response.json(
+            {
+              error: `Gemini API Fehler (${response.status}): ${fehler}`
+            },
+            { status: 502 }
+          );
+        }
+
+        // Antwort verarbeiten
         const answer = (data.candidates?.[0]?.content?.parts || [])
           .map(part => part.text || "")
           .join("\n")
@@ -92,6 +102,7 @@ export default {
 
       } catch (error) {
         console.error("JARVIS-Fehler:", error.message);
+
         return Response.json(
           { error: "Verbindung zu Gemini fehlgeschlagen." },
           { status: 502 }
@@ -99,6 +110,7 @@ export default {
       }
     }
 
+    // Webseite aus dem Cloudflare-Assets-Speicher laden
     return env.ASSETS.fetch(request);
   }
 };
