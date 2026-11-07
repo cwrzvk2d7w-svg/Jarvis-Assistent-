@@ -74,12 +74,17 @@ export default {
         const data = await response.json();
 
         if (!response.ok) {
-          console.error("Gemini-Fehler:", data.error?.message);
-          return Response.json(
-            { error: "Gemini konnte nicht antworten." },
-            { status: 502 }
-          );
-        }
+  console.error("Gemini-Fehler:", data.error?.message);
+
+  return Response.json(
+    {
+      error: "Gemini API Fehler",
+      status: response.status,
+      details: data.error?.message || "Unbekannter Fehler"
+    },
+    { status: 502 }
+  );
+}
 
         const answer = (data.candidates?.[0]?.content?.parts || [])
           .map(part => part.text || "")
