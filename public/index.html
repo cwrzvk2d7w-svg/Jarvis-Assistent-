@@ -201,7 +201,14 @@ input {
 
 <script>
 'use strict';
-
+// JARVIS App-System aktivieren
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(() => console.log("JARVIS App aktiviert"))
+            .catch(error => console.error("App-Fehler:", error));
+    });
+}
 const antwort = document.getElementById('antwort');
 const status = document.getElementById('status');
 const feld = document.getElementById('eingabe');
