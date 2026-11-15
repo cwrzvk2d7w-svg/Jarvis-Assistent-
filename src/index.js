@@ -3,9 +3,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // KI-Schnittstelle
+    // JARVIS KI-Schnittstelle
     if (url.pathname === "/api/chat") {
-
       if (request.method !== "POST") {
         return Response.json(
           { error: "Nur POST erlaubt." },
@@ -13,9 +12,9 @@ export default {
         );
       }
 
-      if (!env.GEMINI_API_KEY) {
+      if (!env.AI) {
         return Response.json(
-          { error: "Gemini-Schlüssel fehlt in Cloudflare." },
+          { error: "Cloudflare Workers AI ist nicht verbunden." },
           { status: 500 }
         );
       }
@@ -48,69 +47,45 @@ export default {
       }
 
       try {
-        const response = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        const result = await env.AI.run(
+          "@cf/meta/llama-3.1-8b-instruct",
           {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": env.GEMINI_API_KEY
-            },
-            body: JSON.stringify({
-              systemInstruction: {
-                parts: [{
-                  text: "Du bist JARVIS, ein freundlicher und hilfreicher persönlicher Assistent. Antworte auf Deutsch, klar und verständlich."
-                }]
+            messages: [
+              {
+                role: "system",
+                content:
+                  "Du bist JARVIS, ein freundlicher und hilfreicher persönlicher KI-Assistent. Antworte auf Deutsch, klar, verständlich und präzise."
               },
-              contents: [{
+              {
                 role: "user",
-                parts: [{ text: frage }]
-              }],
-              generationConfig: {
-                maxOutputTokens: 300
+                content: frage
               }
-            })
+            ],
+            max_tokens: 300
           }
         );
 
-        const data = await response.json();
+        const answer = result?.response?.trim();
 
-        // Ausführliche Gemini-Fehlerbehandlung
-        if (!response.ok) {
-          const fehler =
-            data.error?.message || "Unbekannter Gemini-Fehler";
-
-          console.error("Gemini-Fehler:", fehler);
-
+        if (!answer) {
           return Response.json(
-            {
-              error: `Gemini API Fehler (${response.status}): ${fehler}`
-            },
+            { error: "Llama hat keine Antwort geliefert." },
             { status: 502 }
           );
         }
 
-        // Antwort verarbeiten
-        const answer = (data.candidates?.[0]?.content?.parts || [])
-          .map(part => part.text || "")
-          .join("\n")
-          .trim();
-
-        return Response.json({
-          answer: answer || "Keine Antwort erhalten."
-        });
+        return Response.json({ answer });
 
       } catch (error) {
-        console.error("JARVIS-Fehler:", error.message);
+        console.error("Llama-Fehler:", error.message);
 
         return Response.json(
-          { error: "Verbindung zu Gemini fehlgeschlagen." },
+          { error: "Verbindung zu Llama fehlgeschlagen." },
           { status: 502 }
         );
       }
     }
 
-    // Webseite aus dem Cloudflare-Assets-Speicher laden
     return env.ASSETS.fetch(request);
   }
 };
