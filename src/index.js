@@ -3,7 +3,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // JARVIS KI-Schnittstelle
     if (url.pathname === "/api/chat") {
       if (request.method !== "POST") {
         return Response.json(
@@ -46,43 +45,125 @@ export default {
         );
       }
 
+      // 1. LLAMA erstellt einen eigenen Vorschlag
+      let llamaAntwort;
+
       try {
-        const result = await env.AI.run(
+        const llamaResult = await env.AI.run(
           "@cf/meta/llama-3.1-8b-instruct-fast",
           {
             messages: [
               {
                 role: "system",
                 content:
-                  "Du bist JARVIS, ein freundlicher und hilfreicher persönlicher KI-Assistent. Antworte auf Deutsch, klar, verständlich und präzise."
+                  "Du bist Llama im JARVIS-KI-Team. Erarbeite eigenständig einen hilfreichen Lösungsvorschlag auf Deutsch. Antworte klar, sachlich und präzise. Weise auf Unsicherheiten hin."
               },
               {
                 role: "user",
                 content: frage
               }
             ],
-            max_tokens: 300
+            max_tokens: 250
           }
         );
 
-        const answer = result?.response?.trim();
+        llamaAntwort = llamaResult?.response?.trim();
 
-        if (!answer) {
-          return Response.json(
-            { error: "Llama hat keine Antwort geliefert." },
-            { status: 502 }
-          );
+        if (!llamaAntwort) {
+          throw new Error("Keine Llama-Antwort");
         }
 
-        return Response.json({ answer });
-
       } catch (error) {
-        console.error("Llama-Fehler:", error.message);
+        console.error("Llama-Fehler:", error?.message || error);
 
         return Response.json(
-          { error: "Verbindung zu Llama fehlgeschlagen." },
+          { error: "Llama konnte gerade keine Antwort liefern." },
           { status: 502 }
         );
+      }
+
+      // 2. Ohne OpenAI-Schlüssel bleibt Llama aktiv
+      if (!env.OPENAI_API_KEY) {
+        return Response.json({
+          answer: llamaAntwort,
+          team: false
+        });
+      }
+
+      // 3. CHATGPT prüft und verbessert Llamas Vorschlag
+      try {
+        const openaiResponse = await fetch(
+          "https://api.openai.com/v1/responses",
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "gpt-6-luna",
+              instructions:
+                "Du bist ChatGPT im JARVIS-KI-Team. Prüfe Llamas Vorschlag kritisch auf Richtigkeit und Vollständigkeit. Korrigiere Fehler und ergänze fehlende Aspekte. Erstelle eine gemeinsame, verständliche Antwort auf Deutsch. Erfinde keine Fakten und benenne Unsicherheiten offen.",
+              input:
+                "Nutzeranfrage:\n" + frage +
+                "\n\nVorschlag von Llama:\n" + llamaAntwort,
+              max_output_tokens: 500
+            })
+          }
+        );
+
+        if (!openaiResponse.ok) {
+          const errorText = await openaiResponse.text();
+
+          console.error(
+            "OpenAI-Fehler:",
+            openaiResponse.status,
+            errorText
+          );
+
+          return Response.json({
+            answer:
+              llamaAntwort +
+              "\n\n(Hinweis: ChatGPT war nicht erreichbar. Dies ist die Antwort von Llama.)",
+            team: false
+          });
+        }
+
+        const openaiData = await openaiResponse.json();
+
+        const answer = (openaiData.output || [])
+          .filter(item => item.type === "message")
+          .flatMap(item => item.content || [])
+          .filter(part => part.type === "output_text")
+          .map(part => part.text)
+          .join("\n")
+          .trim();
+
+        if (!answer) {
+          return Response.json({
+            answer: llamaAntwort,
+            team: false
+          });
+        }
+
+        // 4. Gemeinsame Antwort an JARVIS
+        return Response.json({
+          answer,
+          team: true
+        });
+
+      } catch (error) {
+        console.error(
+          "OpenAI-Verbindungsfehler:",
+          error?.message || error
+        );
+
+        return Response.json({
+          answer:
+            llamaAntwort +
+            "\n\n(Hinweis: ChatGPT war nicht erreichbar. Dies ist die Antwort von Llama.)",
+          team: false
+        });
       }
     }
 
