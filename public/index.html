@@ -201,33 +201,58 @@ input {
 
 <script>
 'use strict';
-// JARVIS App-System aktivieren
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js")
-            .then(() => console.log("JARVIS App aktiviert"))
-            .catch(error => console.error("App-Fehler:", error));
-    });
-}
+
+// ==========================================
+// J.A.R.V.I.S. – RED CORE
+// SPRACHSTEUERUNG UND KI-VERBINDUNG
+// ==========================================
+
+// HTML-Elemente
 const antwort = document.getElementById('antwort');
 const status = document.getElementById('status');
 const feld = document.getElementById('eingabe');
 const sendenButton = document.getElementById('sendenButton');
 const voiceInfo = document.getElementById('voiceInfo');
+const sprechButton = document.getElementById('sprechButton');
+const connectionPill = document.getElementById('connectionPill');
 
+// Systemvariablen
 let recognition = null;
 let ausgewaehlteStimme = null;
-
-// Freisprechmodus
 let freisprechenAktiv = false;
-let warteAufBefehl = false;
 let anfrageLaeuft = false;
+let sprichtGerade = false;
+let neustartTimer = null;
+let startLaeuft = false;
+let recognitionGeneration = 0;
 
 
-/* =================================
-   JARVIS SPRACHAUSGABE
-   WEIBLICHE DEUTSCHE STIMME
-================================= */
+// ==========================================
+// SERVICE WORKER
+// ==========================================
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log('JARVIS App aktiviert'))
+            .catch(error => console.error('App-Fehler:', error));
+    });
+}
+
+
+// ==========================================
+// STATUSSTEUERUNG
+// ==========================================
+
+function setState(state, label) {
+    document.body.dataset.state = state;
+    status.textContent = label;
+}
+
+
+// ==========================================
+// DEUTSCHE SPRACHAUSGABE
+// ==========================================
 
 function stimmenLaden() {
 
@@ -237,144 +262,171 @@ function stimmenLaden() {
         return;
     }
 
-    const voices = window.speechSynthesis.getVoices();
+    const voices = speechSynthesis.getVoices();
 
-    const germanVoices = voices.filter(voice =>
-        voice.lang.toLowerCase().startsWith('de')
+    const german = voices.filter(v =>
+        (v.lang || '').toLowerCase().startsWith('de')
     );
 
-    if (germanVoices.length === 0) {
+    if (!german.length) {
         voiceInfo.textContent =
             'Keine deutsche Stimme verfügbar.';
         return;
     }
 
-    // Bevorzugte weiblich klingende Stimmen
-    const preferred = germanVoices.find(voice =>
-        /anna|marlene|vicki|petra|female|siri/i.test(voice.name)
-    );
-
-    ausgewaehlteStimme = preferred || germanVoices[0];
+    ausgewaehlteStimme =
+        german.find(v =>
+            /anna|marlene|vicki|petra|female|siri/i.test(v.name)
+        ) || german[0];
 
     voiceInfo.textContent =
         'Aktive Stimme: ' + ausgewaehlteStimme.name;
 }
 
-// Stimmen initial laden
 if ('speechSynthesis' in window) {
     stimmenLaden();
-
-    window.speechSynthesis.onvoiceschanged = stimmenLaden;
+    speechSynthesis.addEventListener?.(
+        'voiceschanged',
+        stimmenLaden
+    );
 }
 
 
-/* =================================
-   JARVIS SPRICHT
-================================= */
+// ==========================================
+// MIKROFON UND NEUSTART
+// ==========================================
 
+function clearRestart() {
 
-function stimme(text) {
-
-    if (!('speechSynthesis' in window)) {
-        antwort.textContent +=
-            '\n\nSprachausgabe nicht verfügbar.';
-        
-        if (freisprechenAktiv) {
-            setTimeout(mikrofonStarten, 1000);
-        }
-        return;
+    if (neustartTimer !== null) {
+        clearTimeout(neustartTimer);
+        neustartTimer = null;
     }
+}
 
-    // Mikrofon während der Antwort pausieren
-    if (recognition) {
+function stopRecognition() {
+
+    const old = recognition;
+
+    recognition = null;
+    startLaeuft = false;
+
+    if (old) {
+        old.onstart = null;
+        old.onresult = null;
+        old.onerror = null;
+        old.onend = null;
+
         try {
-            recognition.abort();
+            old.abort();
         } catch (_) {}
     }
-
-    const synth = window.speechSynthesis;
-    synth.cancel();
-
-    const u = new SpeechSynthesisUtterance(text);
-
-    u.lang = 'de-DE';
-    u.rate = 0.92;
-    u.pitch = 1.05;
-    u.volume = 1;
-
-    if (ausgewaehlteStimme) {
-        u.voice = ausgewaehlteStimme;
-    }
-
-    u.onstart = () => {
-        status.textContent = 'JARVIS SPRICHT';
-    };
-
-    u.onend = () => {
-        status.textContent = 'SYSTEM BEREIT';
-
-        if (freisprechenAktiv) {
-            setTimeout(mikrofonStarten, 1000);
-        }
-    };
-
-    u.onerror = () => {
-        status.textContent = 'SYSTEM BEREIT';
-
-        if (freisprechenAktiv) {
-            setTimeout(mikrofonStarten, 1000);
-        }
-    };
-
-    synth.speak(u);
 }
 
+function planListen() {
 
-/* =================================
-   STIMME TESTEN
-================================= */
+    clearRestart();
 
-document.getElementById('testButton')
-    .addEventListener('click', () => {
-
-        stimmenLaden();
-
-        stimme(
-            'Hallo. Ich bin JARVIS. Wie kann ich dir heute helfen?'
-        );
-    });
-
-
-/* =================================
-   KI-VERBINDUNG MIT LLAMA
-================================= */
-
-async function senden(e) {
-
-    if (e && typeof e.preventDefault === 'function') {
-        e.preventDefault();
-    }
-
-    const q = feld.value.trim();
-
-    if (!q) {
+    if (
+        !freisprechenAktiv ||
+        anfrageLaeuft ||
+        sprichtGerade ||
+        recognition ||
+        startLaeuft
+    ) {
         return;
     }
 
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-    }
+    neustartTimer = setTimeout(() => {
+        neustartTimer = null;
+        startListening();
+    }, 900);
+}
 
-    feld.value = '';
 
-    antwort.textContent = 'JARVIS denkt nach ...';
-    status.textContent = 'KI VERARBEITET ANFRAGE';
+// ==========================================
+// JARVIS SPRICHT
+// ==========================================
 
-    sendenButton.disabled = true;
+function speak(text) {
+
+    return new Promise(resolve => {
+
+        if (!('speechSynthesis' in window)) {
+            voiceInfo.textContent =
+                'Sprachausgabe nicht verfügbar.';
+            resolve();
+            return;
+        }
+
+        stopRecognition();
+        speechSynthesis.cancel();
+
+        const utterance =
+            new SpeechSynthesisUtterance(text);
+
+        utterance.lang = 'de-DE';
+        utterance.rate = 0.92;
+        utterance.pitch = 1.05;
+        utterance.volume = 1;
+
+        if (ausgewaehlteStimme) {
+            utterance.voice = ausgewaehlteStimme;
+        }
+
+        let done = false;
+
+        const finish = () => {
+
+            if (done) return;
+
+            done = true;
+            sprichtGerade = false;
+
+            setState('idle', 'SYSTEM BEREIT');
+
+            resolve();
+        };
+
+        utterance.onstart = () => {
+
+            sprichtGerade = true;
+
+            setState(
+                'speaking',
+                'JARVIS SPRICHT'
+            );
+        };
+
+        utterance.onend = finish;
+        utterance.onerror = finish;
+
+        speechSynthesis.speak(utterance);
+    });
+}
+
+
+// ==========================================
+// VERBINDUNG MIT LLAMA AI
+// ==========================================
+
+async function askAI(text) {
+
+    setState(
+        'thinking',
+        'JARVIS DENKT NACH'
+    );
+
+    antwort.textContent =
+        'JARVIS denkt nach ...';
+
+    connectionPill.textContent =
+        'LLAMA AI · WORKING';
 
     try {
 
         const response = await fetch('/api/chat', {
+
             method: 'POST',
 
             headers: {
@@ -382,14 +434,14 @@ async function senden(e) {
             },
 
             body: JSON.stringify({
-                message: q
+                message: text
             })
         });
 
-        let daten;
+        let data;
 
         try {
-            daten = await response.json();
+            data = await response.json();
         } catch (_) {
             throw new Error(
                 'Der Server hat keine gültige Antwort geliefert.'
@@ -398,201 +450,400 @@ async function senden(e) {
 
         if (!response.ok) {
             throw new Error(
-                daten.error ||
-                ('Serverfehler (' + response.status + ').')
+                data.error ||
+                `Serverfehler (${response.status}).`
             );
         }
 
         if (
-            typeof daten.answer !== 'string' ||
-            !daten.answer.trim()
+            typeof data.answer !== 'string' ||
+            !data.answer.trim()
         ) {
             throw new Error(
-                'Der Server hat keine Antwort geliefert.'
+                'Llama hat keine Antwort geliefert.'
             );
         }
 
-        // Antwort gleichzeitig als Text anzeigen
-        antwort.textContent = daten.answer;
+        connectionPill.textContent =
+            'LLAMA AI · ONLINE';
 
-        // Antwort akustisch ausgeben
-        stimme(daten.answer);
+        antwort.textContent = data.answer;
 
-    } catch (err) {
+        await speak(data.answer);
 
-        console.error('JARVIS-Fehler:', err);
+    } catch (error) {
+
+        console.error('JARVIS:', error);
+
+        connectionPill.textContent =
+            'LLAMA AI · CHECK';
 
         antwort.textContent =
             'Fehler: ' +
-            (err.message || 'Verbindung fehlgeschlagen.');
+            (error.message ||
+            'Verbindung fehlgeschlagen.');
 
-        status.textContent = 'VERBINDUNGSFEHLER';
-    if (freisprechenAktiv) {
-        setTimeout(() => {
-            if (freisprechenAktiv && !anfrageLaeuft) {
-                mikrofonStarten();
-            }
-        }, 1500);
+        setState(
+            'error',
+            'VERBINDUNGSFEHLER'
+        );
     }
+}
+
+
+// ==========================================
+// NACHRICHT SENDEN
+// ==========================================
+
+async function sendMessage(text) {
+
+    if (!text || anfrageLaeuft) return;
+
+    anfrageLaeuft = true;
+
+    clearRestart();
+    sendenButton.disabled = true;
+
+    stopRecognition();
+
+    try {
+
+        await askAI(text);
+
     } finally {
 
+        anfrageLaeuft = false;
         sendenButton.disabled = false;
 
-        if (status.textContent !== 'VERBINDUNGSFEHLER') {
-            status.textContent = 'SYSTEM BEREIT';
+        if (freisprechenAktiv) {
+            planListen();
+        } else if (
+            document.body.dataset.state !== 'error'
+        ) {
+            setState(
+                'idle',
+                'SYSTEM BEREIT'
+            );
         }
     }
 }
 
 
-/* =================================
-   NACHRICHT ABSENDEN
-================================= */
+// ==========================================
+// TEXT EINGEBEN UND SENDEN
+// ==========================================
 
 document.getElementById('chatForm')
-    .addEventListener('submit', senden);
+    .addEventListener('submit', async event => {
+
+        event.preventDefault();
+
+        const text = feld.value.trim();
+
+        if (!text || anfrageLaeuft) return;
+
+        feld.value = '';
+
+        await sendMessage(text);
+    });
 
 
-/* =================================
-   SPRACHEINGABE
-================================= */
+// ==========================================
+// SPRACHERKENNUNG STARTEN
+// ==========================================
 
-/* =================================
-   JARVIS FREIHAND-SPRACHMODUS
-================================= */
+function startListening() {
 
-let hoerTimer = null;
+    if (
+        !freisprechenAktiv ||
+        anfrageLaeuft ||
+        sprichtGerade ||
+        recognition ||
+        startLaeuft
+    ) {
+        return;
+    }
 
-function mikrofonStarten() {
-    if (!freisprechenAktiv || anfrageLaeuft) return;
-
-    const Recognition =
+    const SpeechRecognition =
         window.SpeechRecognition ||
         window.webkitSpeechRecognition;
 
-    if (!Recognition) {
+    if (!SpeechRecognition) {
+
         antwort.textContent =
-            "Spracherkennung wird nicht unterstützt. Bitte Safari verwenden.";
-        freisprechenAktiv = false;
+            'Spracherkennung wird von diesem Browser ' +
+            'nicht unterstützt. Bitte Safari verwenden.';
+
+        stopHandsFree();
         return;
     }
 
-    if (recognition) {
-        try { recognition.abort(); } catch (_) {}
-    }
+    startLaeuft = true;
 
-    recognition = new Recognition();
-    recognition.lang = "de-DE";
-    recognition.continuous = false;
-    recognition.maxAlternatives = 1;
+    const instanceId = ++recognitionGeneration;
 
-// Nach 10 Sekunden ohne Sprachbeginn neu versuchen
-recognition.onspeechend = () => {
-    console.log("Sprache beendet");
-};
-    recognition.interimResults = false;
+    const rec = new SpeechRecognition();
 
-    
-recognition.onstart = () => {
-    status.textContent = "JARVIS HÖRT ZU";
+    recognition = rec;
 
-    clearTimeout(hoerTimer);
+    rec.lang = 'de-DE';
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
 
-    hoerTimer = setTimeout(() => {
-        if (freisprechenAktiv && !anfrageLaeuft) {
-            try {
-                recognition.abort();
-            } catch (_) {}
+    rec.onstart = () => {
 
-            setTimeout(mikrofonStarten, 500);
+        startLaeuft = false;
+
+        if (
+            freisprechenAktiv &&
+            recognition === rec
+        ) {
+            setState(
+                'listening',
+                'JARVIS HÖRT ZU'
+            );
         }
-    }, 10000);
-};
-
-
-    recognition.onresult = async (event) => {
-    const text = event.results[0][0].transcript.trim();
-
-    if (!text) {
-        return;
-    }
-
-    clearTimeout(hoerTimer);
-    warteAufBefehl = false;
-
-    anfrageLaeuft = true;
-    feld.value = text;
-
-    try {
-        await senden();
-    } finally {
-        anfrageLaeuft = false;
-    }
-};
-    recognition.onerror = (event) => {
-        console.log("Mikrofon:", event.error);
     };
 
-    recognition.onend = () => {
-    clearTimeout(hoerTimer);
+    rec.onresult = event => {
 
-    if (freisprechenAktiv && !anfrageLaeuft) {
-        status.textContent = "SYSTEM BEREIT";
+        if (
+            !freisprechenAktiv ||
+            anfrageLaeuft ||
+            recognition !== rec
+        ) {
+            return;
+        }
 
-        hoerTimer = setTimeout(() => {
-            mikrofonStarten();
-        }, 1000);
-    }
-};
+        const result =
+            event.results[event.resultIndex];
+
+        const transcript =
+            result && result[0]
+                ? result[0].transcript.trim()
+                : '';
+
+        if (!transcript) return;
+
+        feld.value = transcript;
+
+        sendMessage(transcript);
+    };
+
+    rec.onerror = event => {
+
+        console.warn(
+            'Spracherkennung:',
+            event.error
+        );
+
+        if (
+            event.error === 'not-allowed' ||
+            event.error === 'service-not-allowed'
+        ) {
+
+            antwort.textContent =
+                'Mikrofonzugriff verweigert. ' +
+                'Bitte die Mikrofonberechtigung für Safari prüfen.';
+
+            stopHandsFree();
+
+        } else if (
+            event.error === 'audio-capture'
+        ) {
+
+            antwort.textContent =
+                'Das Mikrofon konnte nicht angesprochen werden.';
+        }
+    };
+
+    rec.onend = () => {
+
+        if (recognition === rec) {
+            recognition = null;
+        }
+
+        startLaeuft = false;
+
+        if (instanceId !== recognitionGeneration) {
+            return;
+        }
+
+        if (
+            freisprechenAktiv &&
+            !anfrageLaeuft &&
+            !sprichtGerade
+        ) {
+
+            setState(
+                'idle',
+                'SYSTEM BEREIT'
+            );
+
+            planListen();
+        }
+    };
 
     try {
-        recognition.start();
+
+        rec.start();
+
     } catch (error) {
-        console.log("Mikrofonstart:", error);
+
+        console.warn(
+            'Mikrofonstart:',
+            error
+        );
+
+        if (recognition === rec) {
+            recognition = null;
+        }
+
+        startLaeuft = false;
+
+        planListen();
     }
 }
 
-document.getElementById("sprechButton")
-    .addEventListener("click", () => {
 
-        freisprechenAktiv = !freisprechenAktiv;
+// ==========================================
+// FREISPRECHMODUS
+// ==========================================
+
+function startHandsFree() {
+
+    if (freisprechenAktiv) return;
+
+    freisprechenAktiv = true;
+
+    sprechButton.textContent =
+        '🔴 Freisprechen beenden';
+
+    sprechButton.classList.add('primary');
+
+    antwort.textContent =
+        'JARVIS ist bereit. Ich höre dir zu.';
+
+    startListening();
+}
+
+function stopHandsFree() {
+
+    freisprechenAktiv = false;
+
+    clearRestart();
+
+    recognitionGeneration++;
+
+    stopRecognition();
+
+    if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+    }
+
+    sprichtGerade = false;
+
+    sprechButton.textContent =
+        '🎙 Freisprechen starten';
+
+    setState(
+        'idle',
+        'SYSTEM BEREIT'
+    );
+}
+
+sprechButton.addEventListener('click', () => {
+
+    if (freisprechenAktiv) {
+        stopHandsFree();
+    } else {
+        startHandsFree();
+    }
+});
+
+
+// ==========================================
+// STIMME TESTEN
+// ==========================================
+
+document.getElementById('testButton')
+    .addEventListener('click', async () => {
+
+        clearRestart();
+
+        await speak(
+            'Hallo. Ich bin JARVIS. ' +
+            'Wie kann ich dir heute helfen?'
+        );
 
         if (freisprechenAktiv) {
-            document.getElementById("sprechButton").textContent =
-                "🔴 Freisprechen beenden";
-
-            mikrofonStarten();
-        } else {
-            clearTimeout(hoerTimer);
-
-            if (recognition) {
-                try { recognition.abort(); } catch (_) {}
-            }
-
-            status.textContent = "SYSTEM BEREIT";
-
-            document.getElementById("sprechButton").textContent =
-                "🎙 Freisprechen starten";
+            planListen();
         }
     });
 
 
-
-/* =================================
-   SPRACHAUSGABE STOPPEN
-================================= */
+// ==========================================
+// SPRACHAUSGABE STOPPEN
+// ==========================================
 
 document.getElementById('stoppButton')
     .addEventListener('click', () => {
 
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
+            speechSynthesis.cancel();
         }
 
-        status.textContent = 'SYSTEM BEREIT';
+        sprichtGerade = false;
+
+        setState(
+            'idle',
+            'SYSTEM BEREIT'
+        );
+
+        if (freisprechenAktiv) {
+            planListen();
+        }
     });
 
-</script>
 
-</body>
-</html>
+// ==========================================
+// APP SICHTBARKEIT
+// ==========================================
+
+document.addEventListener(
+    'visibilitychange',
+    () => {
+
+        if (document.hidden) {
+
+            clearRestart();
+            stopRecognition();
+
+        } else if (
+            freisprechenAktiv &&
+            !anfrageLaeuft &&
+            !sprichtGerade
+        ) {
+
+            planListen();
+        }
+    }
+);
+
+
+// ==========================================
+// SYSTEMSTART
+// ==========================================
+
+setState(
+    'idle',
+    'SYSTEM BEREIT'
+);
+
+connectionPill.textContent =
+    'LLAMA AI · READY';
+
+console.log(
+    'J.A.R.V.I.S. RED CORE erfolgreich gestartet.'
+);
