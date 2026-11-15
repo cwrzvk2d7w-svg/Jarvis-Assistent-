@@ -427,7 +427,13 @@ async function senden(e) {
             (err.message || 'Verbindung fehlgeschlagen.');
 
         status.textContent = 'VERBINDUNGSFEHLER';
-
+    if (freisprechenAktiv) {
+        setTimeout(() => {
+            if (freisprechenAktiv && !anfrageLaeuft) {
+                mikrofonStarten();
+            }
+        }, 1500);
+    }
     } finally {
 
         sendenButton.disabled = false;
