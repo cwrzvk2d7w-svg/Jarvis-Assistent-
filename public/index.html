@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -70,19 +71,14 @@ h1 {
 }
 
 @keyframes rotate {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 @keyframes glow {
-    50% {
-        box-shadow: 0 0 55px #148dffbb;
-    }
+    50% { box-shadow: 0 0 55px #148dffbb; }
 }
 
-button,
-input {
+button, input {
     border-radius: 13px;
     padding: 14px;
     margin: 5px;
@@ -93,6 +89,7 @@ button {
     background: #104b83;
     color: white;
     border: 1px solid #65eaff;
+    cursor: pointer;
 }
 
 button:disabled {
@@ -120,6 +117,12 @@ input {
     min-height: 35px;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
+
+.voice-info {
+    color: #91c9df;
+    font-size: 12px;
+    margin-top: 12px;
 }
 
 @media (max-width: 500px) {
@@ -152,6 +155,10 @@ input {
     🎙 Mit JARVIS sprechen
 </button>
 
+<button type="button" id="testButton">
+    🔊 Stimme testen
+</button>
+
 <button type="button" id="stoppButton">
     Stimme aus
 </button>
@@ -161,13 +168,14 @@ input {
     <strong>JARVIS · ANTWORT</strong>
 
     <p id="antwort">
-        Guten Abend. Ich bin JARVIS. Wie kann ich dir helfen?
+        Guten Tag. Ich bin JARVIS. Wie kann ich dir helfen?
     </p>
 
     <form id="chatForm">
 
         <input
             id="eingabe"
+            type="text"
             placeholder="Schreibe eine Nachricht..."
             autocomplete="off"
             maxlength="2000"
@@ -179,6 +187,10 @@ input {
 
     </form>
 
+    <div class="voice-info" id="voiceInfo">
+        Sprachsystem wird geladen ...
+    </div>
+
 </div>
 
 <script>
@@ -188,29 +200,118 @@ const antwort = document.getElementById('antwort');
 const status = document.getElementById('status');
 const feld = document.getElementById('eingabe');
 const sendenButton = document.getElementById('sendenButton');
+const voiceInfo = document.getElementById('voiceInfo');
+
+let recognition = null;
+let ausgewaehlteStimme = null;
 
 
-/* SPRACHAUSGABE */
+/* =================================
+   JARVIS SPRACHAUSGABE
+   WEIBLICHE DEUTSCHE STIMME
+================================= */
+
+function stimmenLaden() {
+
+    if (!('speechSynthesis' in window)) {
+        voiceInfo.textContent =
+            'Sprachausgabe wird nicht unterstützt.';
+        return;
+    }
+
+    const voices = window.speechSynthesis.getVoices();
+
+    const germanVoices = voices.filter(voice =>
+        voice.lang.toLowerCase().startsWith('de')
+    );
+
+    if (germanVoices.length === 0) {
+        voiceInfo.textContent =
+            'Keine deutsche Stimme verfügbar.';
+        return;
+    }
+
+    // Bevorzugte weiblich klingende Stimmen
+    const preferred = germanVoices.find(voice =>
+        /anna|marlene|vicki|petra|female|siri/i.test(voice.name)
+    );
+
+    ausgewaehlteStimme = preferred || germanVoices[0];
+
+    voiceInfo.textContent =
+        'Aktive Stimme: ' + ausgewaehlteStimme.name;
+}
+
+// Stimmen initial laden
+if ('speechSynthesis' in window) {
+    stimmenLaden();
+
+    window.speechSynthesis.onvoiceschanged = stimmenLaden;
+}
+
+
+/* =================================
+   JARVIS SPRICHT
+================================= */
 
 function stimme(text) {
 
     if (!('speechSynthesis' in window)) {
+        antwort.textContent +=
+            '\n\nSprachausgabe nicht verfügbar.';
         return;
     }
 
-    window.speechSynthesis.cancel();
+    const synth = window.speechSynthesis;
+
+    synth.cancel();
 
     const u = new SpeechSynthesisUtterance(text);
 
     u.lang = 'de-DE';
-    u.rate = 0.9;
-    u.pitch = 0.8;
+    u.rate = 0.92;
+    u.pitch = 1.05;
+    u.volume = 1;
 
-    window.speechSynthesis.speak(u);
+    if (ausgewaehlteStimme) {
+        u.voice = ausgewaehlteStimme;
+    }
+
+    u.onstart = () => {
+        status.textContent = 'JARVIS SPRICHT';
+    };
+
+    u.onend = () => {
+        status.textContent = 'SYSTEM BEREIT';
+    };
+
+    u.onerror = (event) => {
+        console.error('Sprachausgabe:', event.error);
+        status.textContent = 'SYSTEM BEREIT';
+    };
+
+    synth.speak(u);
 }
 
 
-/* KI-VERBINDUNG */
+/* =================================
+   STIMME TESTEN
+================================= */
+
+document.getElementById('testButton')
+    .addEventListener('click', () => {
+
+        stimmenLaden();
+
+        stimme(
+            'Hallo. Ich bin JARVIS. Wie kann ich dir heute helfen?'
+        );
+    });
+
+
+/* =================================
+   KI-VERBINDUNG MIT LLAMA
+================================= */
 
 async function senden(e) {
 
@@ -224,6 +325,10 @@ async function senden(e) {
         return;
     }
 
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
     feld.value = '';
 
     antwort.textContent = 'JARVIS denkt nach ...';
@@ -234,7 +339,6 @@ async function senden(e) {
     try {
 
         const response = await fetch('/api/chat', {
-
             method: 'POST',
 
             headers: {
@@ -244,7 +348,6 @@ async function senden(e) {
             body: JSON.stringify({
                 message: q
             })
-
         });
 
         let daten;
@@ -273,45 +376,46 @@ async function senden(e) {
             );
         }
 
+        // Antwort gleichzeitig als Text anzeigen
         antwort.textContent = daten.answer;
 
+        // Antwort akustisch ausgeben
         stimme(daten.answer);
 
     } catch (err) {
 
-        console.error(
-            'JARVIS-Anfrage fehlgeschlagen:',
-            err
-        );
+        console.error('JARVIS-Fehler:', err);
 
         antwort.textContent =
             'Fehler: ' +
-            (
-                err.message ||
-                'Die Verbindung zur KI ist fehlgeschlagen.'
-            );
+            (err.message || 'Verbindung fehlgeschlagen.');
+
+        status.textContent = 'VERBINDUNGSFEHLER';
 
     } finally {
 
-        status.textContent = 'SYSTEM BEREIT';
-
         sendenButton.disabled = false;
 
+        if (status.textContent !== 'VERBINDUNGSFEHLER') {
+            status.textContent = 'SYSTEM BEREIT';
+        }
     }
 }
 
 
-/* NACHRICHT ABSENDEN */
+/* =================================
+   NACHRICHT ABSENDEN
+================================= */
 
-document
-    .getElementById('chatForm')
+document.getElementById('chatForm')
     .addEventListener('submit', senden);
 
 
-/* SPRACHEINGABE */
+/* =================================
+   SPRACHEINGABE
+================================= */
 
-document
-    .getElementById('sprechButton')
+document.getElementById('sprechButton')
     .addEventListener('click', () => {
 
         const Recognition =
@@ -321,14 +425,20 @@ document
         if (!Recognition) {
 
             antwort.textContent =
-                'Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutze das Textfeld.';
+                'Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutze Safari oder das Textfeld.';
 
             return;
         }
 
-        const recognition = new Recognition();
+        if (recognition) {
+            recognition.abort();
+        }
+
+        recognition = new Recognition();
 
         recognition.lang = 'de-DE';
+        recognition.continuous = false;
+        recognition.interimResults = false;
 
         recognition.onstart = () => {
             status.textContent = 'ICH HÖRE ZU';
@@ -339,16 +449,14 @@ document
             feld.value = event.results[0][0].transcript;
 
             senden();
-
         };
 
-        recognition.onerror = () => {
+        recognition.onerror = (event) => {
 
             status.textContent = 'SYSTEM BEREIT';
 
             antwort.textContent =
-                'Bitte prüfe die Mikrofonberechtigung.';
-
+                'Mikrofonfehler: ' + event.error;
         };
 
         recognition.onend = () => {
@@ -356,24 +464,30 @@ document
             if (status.textContent === 'ICH HÖRE ZU') {
                 status.textContent = 'SYSTEM BEREIT';
             }
-
         };
 
-        recognition.start();
-
+        try {
+            recognition.start();
+        } catch (error) {
+            antwort.textContent =
+                'Mikrofon konnte nicht gestartet werden.';
+            status.textContent = 'SYSTEM BEREIT';
+        }
     });
 
 
-/* SPRACHAUSGABE STOPPEN */
+/* =================================
+   SPRACHAUSGABE STOPPEN
+================================= */
 
-document
-    .getElementById('stoppButton')
+document.getElementById('stoppButton')
     .addEventListener('click', () => {
 
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
         }
 
+        status.textContent = 'SYSTEM BEREIT';
     });
 
 </script>
