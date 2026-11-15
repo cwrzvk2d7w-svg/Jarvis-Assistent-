@@ -492,9 +492,23 @@ recognition.onspeechend = () => {
 };
     recognition.interimResults = false;
 
-    recognition.onstart = () => {
-        status.textContent = "JARVIS HÖRT ZU";
-    };
+    
+recognition.onstart = () => {
+    status.textContent = "JARVIS HÖRT ZU";
+
+    clearTimeout(hoerTimer);
+
+    hoerTimer = setTimeout(() => {
+        if (freisprechenAktiv && !anfrageLaeuft) {
+            try {
+                recognition.abort();
+            } catch (_) {}
+
+            setTimeout(mikrofonStarten, 500);
+        }
+    }, 10000);
+};
+
 
     recognition.onresult = async (event) => {
     const text = event.results[0][0].transcript.trim();
