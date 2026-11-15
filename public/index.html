@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -10,8 +9,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="JARVIS">
 <meta name="mobile-web-app-capable" content="yes">
+
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
+
 <title>J.A.R.V.I.S. – Red Core</title>
 
 <style>
@@ -23,8 +24,16 @@
   --panel: rgba(24, 10, 14, .88);
   --muted: #b99da2;
 }
-* { box-sizing: border-box; }
-html { min-height: 100%; background: var(--bg); }
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--bg);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -38,19 +47,33 @@ body {
     linear-gradient(145deg, #10090d, #050507 65%, #10070a);
   overflow-x: hidden;
 }
+
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   opacity: .16;
-  background-image: linear-gradient(rgba(255,50,60,.12) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,50,60,.12) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(255,50,60,.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,50,60,.12) 1px, transparent 1px);
   background-size: 34px 34px;
   mask-image: radial-gradient(ellipse, black, transparent 78%);
 }
-.app { width: min(100%, 560px); margin: 0 auto; position: relative; }
-.topline { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+
+.app {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  position: relative;
+}
+
+.topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 h1 {
   margin: 4px 0 0;
   font-size: clamp(27px, 7vw, 38px);
@@ -58,7 +81,14 @@ h1 {
   color: #fff;
   text-shadow: 0 0 18px rgba(255,48,59,.75);
 }
-.kicker { margin: 8px 0 0; color: #bd858b; font-size: 10px; letter-spacing: .28em; }
+
+.kicker {
+  margin: 8px 0 0;
+  color: #bd858b;
+  font-size: 10px;
+  letter-spacing: .28em;
+}
+
 .pill {
   border: 1px solid rgba(255,70,80,.45);
   border-radius: 999px;
@@ -69,6 +99,7 @@ h1 {
   background: rgba(60,10,17,.42);
   white-space: nowrap;
 }
+
 .status {
   margin: 26px 0 4px;
   color: #ff727b;
@@ -78,255 +109,563 @@ h1 {
   min-height: 18px;
   text-shadow: 0 0 12px rgba(255,40,55,.65);
 }
+
+/* REACTOR */
+
 .reactor-wrap {
   position: relative;
   width: min(78vw, 330px);
   aspect-ratio: 1;
   margin: 12px auto 20px;
-  display:grid;
-  place-items:center;
-  isolation:isolate;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
 }
-.reactor-wrap::before, .reactor-wrap::after {
-  content:"";
-  position:absolute;
+
+.reactor-wrap::before,
+.reactor-wrap::after {
+  content: "";
+  position: absolute;
   inset: 3%;
-  border-radius:50%;
-  border:1px solid rgba(255,55,65,.22);
-  box-shadow: 0 0 35px rgba(255,25,40,.12), inset 0 0 35px rgba(255,25,40,.08);
+  border-radius: 50%;
+  border: 1px solid rgba(255,55,65,.22);
+  box-shadow:
+    0 0 35px rgba(255,25,40,.12),
+    inset 0 0 35px rgba(255,25,40,.08);
 }
-.reactor-wrap::after { inset: 12%; border-style:dashed; opacity:.55; animation: spin 28s linear infinite; }
+
+.reactor-wrap::after {
+  inset: 12%;
+  border-style: dashed;
+  opacity: .55;
+  animation: spin 28s linear infinite;
+}
+
 .ring {
-  position:absolute;
-  border-radius:50%;
+  position: absolute;
+  border-radius: 50%;
   border: 2px solid transparent;
   border-top-color: var(--red);
   border-bottom-color: rgba(255,60,70,.55);
   filter: drop-shadow(0 0 7px rgba(255,40,55,.8));
 }
-.ring.one { inset: 7%; animation: spin 9s linear infinite; }
-.ring.two { inset: 17%; border-width: 5px; border-left-color:rgba(255,60,70,.75); border-right-color:rgba(255,60,70,.35); animation: spinReverse 6s linear infinite; }
-.ring.three { inset: 27%; border-width: 2px; border-left-color:var(--red-hot); border-right-color:var(--red-hot); animation: spin 3.8s linear infinite; }
-.ring.four { inset: 36%; border-width: 7px; border-top-color:#ff9298; border-bottom-color:#a81725; animation: spinReverse 5s linear infinite; }
+
+.ring.one {
+  inset: 7%;
+  animation: spin 9s linear infinite;
+}
+
+.ring.two {
+  inset: 17%;
+  border-width: 5px;
+  border-left-color: rgba(255,60,70,.75);
+  border-right-color: rgba(255,60,70,.35);
+  animation: spinReverse 6s linear infinite;
+}
+
+.ring.three {
+  inset: 27%;
+  border-width: 2px;
+  border-left-color: var(--red-hot);
+  border-right-color: var(--red-hot);
+  animation: spin 3.8s linear infinite;
+}
+
+.ring.four {
+  inset: 36%;
+  border-width: 7px;
+  border-top-color: #ff9298;
+  border-bottom-color: #a81725;
+  animation: spinReverse 5s linear infinite;
+}
+
 .core {
   width: 34%;
-  aspect-ratio:1;
-  position:relative;
-  z-index:2;
-  display:grid;
-  place-items:center;
+  aspect-ratio: 1;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
   clip-path: polygon(50% 0%, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
-  background: linear-gradient(145deg, #fff 0%, #ff8a91 13%, #f21c2d 38%, #650914 75%, #160409 100%);
-  box-shadow: 0 0 24px #ff303b, 0 0 70px rgba(255,30,45,.8);
+  background: linear-gradient(
+    145deg,
+    #fff 0%,
+    #ff8a91 13%,
+    #f21c2d 38%,
+    #650914 75%,
+    #160409 100%
+  );
+  box-shadow:
+    0 0 24px #ff303b,
+    0 0 70px rgba(255,30,45,.8);
   animation: corePulse 3.2s ease-in-out infinite;
 }
+
 .core::before {
-  content:"";
-  position:absolute;
-  inset:17%;
+  content: "";
+  position: absolute;
+  inset: 17%;
   clip-path: inherit;
-  background: radial-gradient(circle, #fff 0%, #ffb7bb 18%, #ff3542 48%, #51050c 100%);
+  background: radial-gradient(
+    circle,
+    #fff 0%,
+    #ffb7bb 18%,
+    #ff3542 48%,
+    #51050c 100%
+  );
   box-shadow: inset 0 0 20px #fff;
 }
+
 .core::after {
-  content:"";
-  position:absolute;
-  width:13%;
-  aspect-ratio:1;
-  border-radius:50%;
-  background:#fff;
-  box-shadow:0 0 12px #fff, 0 0 32px #ff5360, 0 0 65px #ff1528;
+  content: "";
+  position: absolute;
+  width: 13%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 12px #fff,
+    0 0 32px #ff5360,
+    0 0 65px #ff1528;
 }
+
 .scan {
-  position:absolute;
-  inset:2%;
-  border-radius:50%;
-  overflow:hidden;
-  z-index:3;
-  pointer-events:none;
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
 }
+
 .scan::after {
-  content:"";
-  position:absolute;
-  left:0; right:0; top:0;
-  height:35%;
-  background:linear-gradient(180deg, transparent, rgba(255,55,65,.22), transparent);
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 35%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255,55,65,.22),
+    transparent
+  );
   animation: scan 4s linear infinite;
 }
+
 .wave {
-  position:absolute;
-  z-index:4;
-  bottom:8%;
-  left:50%;
-  transform:translateX(-50%);
-  height:28px;
-  display:flex;
-  align-items:center;
-  gap:4px;
-  opacity:.35;
+  position: absolute;
+  z-index: 4;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: .35;
 }
+
 .wave i {
-  display:block;
-  width:3px;
-  height:8px;
-  border-radius:4px;
-  background:#ff5963;
-  box-shadow:0 0 8px #ff2736;
+  display: block;
+  width: 3px;
+  height: 8px;
+  border-radius: 4px;
+  background: #ff5963;
+  box-shadow: 0 0 8px #ff2736;
   animation: wave 1s ease-in-out infinite;
 }
-.wave i:nth-child(2n) { animation-delay:.13s; }
-.wave i:nth-child(3n) { animation-delay:.27s; }
-.wave i:nth-child(4n) { animation-delay:.39s; }
 
-@keyframes spin { to { transform:rotate(360deg); } }
-@keyframes spinReverse { to { transform:rotate(-360deg); } }
-@keyframes corePulse { 50% { transform:scale(1.06); filter:brightness(1.25); } }
-@keyframes scan { from { transform:translateY(-120%); } to { transform:translateY(340%); } }
-@keyframes wave { 0%,100% { height:6px; } 50% { height:24px; } }
+.wave i:nth-child(2n) { animation-delay: .13s; }
+.wave i:nth-child(3n) { animation-delay: .27s; }
+.wave i:nth-child(4n) { animation-delay: .39s; }
 
-body[data-state="listening"] .ring.one { animation-duration:3s; }
-body[data-state="listening"] .ring.two { animation-duration:2.2s; }
-body[data-state="listening"] .core { animation-duration:1.1s; filter:brightness(1.25); }
-body[data-state="listening"] .wave { opacity:1; }
-body[data-state="thinking"] .ring.one { animation-duration:1.5s; }
-body[data-state="thinking"] .ring.two { animation-duration:1s; }
-body[data-state="thinking"] .ring.three { animation-duration:1.2s; }
-body[data-state="thinking"] .core { animation-duration:.65s; filter:brightness(1.65); }
-body[data-state="speaking"] .ring { animation-duration:1.2s; }
-body[data-state="speaking"] .core { animation-duration:.48s; filter:brightness(1.8); }
-body[data-state="speaking"] .wave { opacity:1; }
-body[data-state="error"] .core { background:#7d1018; animation: errorPulse .5s ease-in-out 3; }
-body[data-state="error"] .ring { border-top-color:#ffb0b4; }
-@keyframes errorPulse { 50% { filter:brightness(.45); transform:scale(.94); } }
-
-.state-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin: 6px 0 20px; }
-.state-card {
-  min-width:0;
-  padding:11px 5px;
-  border:1px solid rgba(255,65,75,.22);
-  border-radius:12px;
-  color:#987b80;
-  background:rgba(36,12,17,.48);
-  font-size:10px;
-  letter-spacing:.12em;
-  transition:.2s;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
-.state-card .symbol { display:block; color:#a64a52; font-size:20px; margin-bottom:5px; }
+
+@keyframes spinReverse {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes corePulse {
+  50% {
+    transform: scale(1.06);
+    filter: brightness(1.25);
+  }
+}
+
+@keyframes scan {
+  from { transform: translateY(-120%); }
+  to { transform: translateY(340%); }
+}
+
+@keyframes wave {
+  0%, 100% { height: 6px; }
+  50% { height: 24px; }
+}
+
+/* STATUS-ANIMATIONEN */
+
+body[data-state="listening"] .ring.one {
+  animation-duration: 3s;
+}
+
+body[data-state="listening"] .ring.two {
+  animation-duration: 2.2s;
+}
+
+body[data-state="listening"] .core {
+  animation-duration: 1.1s;
+  filter: brightness(1.25);
+}
+
+body[data-state="listening"] .wave {
+  opacity: 1;
+}
+
+body[data-state="thinking"] .ring.one {
+  animation-duration: 1.5s;
+}
+
+body[data-state="thinking"] .ring.two {
+  animation-duration: 1s;
+}
+
+body[data-state="thinking"] .ring.three {
+  animation-duration: 1.2s;
+}
+
+body[data-state="thinking"] .core {
+  animation-duration: .65s;
+  filter: brightness(1.65);
+}
+
+body[data-state="speaking"] .ring {
+  animation-duration: 1.2s;
+}
+
+body[data-state="speaking"] .core {
+  animation-duration: .48s;
+  filter: brightness(1.8);
+}
+
+body[data-state="speaking"] .wave {
+  opacity: 1;
+}
+
+body[data-state="error"] .core {
+  background: #7d1018;
+  animation: errorPulse .5s ease-in-out 3;
+}
+
+body[data-state="error"] .ring {
+  border-top-color: #ffb0b4;
+}
+
+@keyframes errorPulse {
+  50% {
+    filter: brightness(.45);
+    transform: scale(.94);
+  }
+}
+
+/* STATUSKARTEN */
+
+.state-row {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+  margin: 6px 0 20px;
+}
+
+.state-card {
+  min-width: 0;
+  padding: 11px 5px;
+  border: 1px solid rgba(255,65,75,.22);
+  border-radius: 12px;
+  color: #987b80;
+  background: rgba(36,12,17,.48);
+  font-size: 10px;
+  letter-spacing: .12em;
+  transition: .2s;
+}
+
+.state-card .symbol {
+  display: block;
+  color: #a64a52;
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
 body[data-state="listening"] #stateListen,
 body[data-state="thinking"] #stateThink,
 body[data-state="speaking"] #stateSpeak,
 body[data-state="error"] #stateThink {
-  color:#fff;
-  border-color:rgba(255,70,80,.9);
-  background:rgba(117,13,25,.48);
-  box-shadow:0 0 18px rgba(255,30,45,.2);
+  color: #fff;
+  border-color: rgba(255,70,80,.9);
+  background: rgba(117,13,25,.48);
+  box-shadow: 0 0 18px rgba(255,30,45,.2);
 }
+
 body[data-state="listening"] #stateListen .symbol,
 body[data-state="thinking"] #stateThink .symbol,
 body[data-state="speaking"] #stateSpeak .symbol,
-body[data-state="error"] #stateThink .symbol { color:#ff737c; }
+body[data-state="error"] #stateThink .symbol {
+  color: #ff737c;
+}
+
+/* ANTWORTBEREICH */
 
 .panel {
-  padding:17px;
-  margin-top:12px;
-  border:1px solid rgba(255,60,70,.3);
-  border-radius:16px;
-  background:linear-gradient(145deg, rgba(34,12,17,.92), rgba(12,8,11,.94));
-  box-shadow:0 12px 35px rgba(0,0,0,.25), inset 0 0 24px rgba(255,35,48,.04);
-  text-align:left;
+  padding: 17px;
+  margin-top: 12px;
+  border: 1px solid rgba(255,60,70,.3);
+  border-radius: 16px;
+  background: linear-gradient(
+    145deg,
+    rgba(34,12,17,.92),
+    rgba(12,8,11,.94)
+  );
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.25),
+    inset 0 0 24px rgba(255,35,48,.04);
+  text-align: left;
 }
-.panel-title { color:#ff737c; font-size:11px; font-weight:700; letter-spacing:.18em; }
-#antwort { min-height:44px; white-space:pre-wrap; overflow-wrap:anywhere; color:#fff0f1; line-height:1.55; }
-form { display:flex; gap:7px; align-items:stretch; }
-input {
-  min-width:0; flex:1; width:100%; margin:0;
-  border-radius:11px; padding:13px;
-  background:#100b0e; color:white; border:1px solid #71303a;
-  font-size:16px;
-}
-button {
-  border:1px solid #ff5661;
-  border-radius:11px;
-  padding:12px 15px;
-  background:linear-gradient(145deg,#a71926,#510b13);
-  color:#fff;
-  font-size:14px;
-  font-weight:650;
-  cursor:pointer;
-  box-shadow:0 0 14px rgba(255,40,55,.13);
-}
-button:disabled { opacity:.5; }
-.controls { display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:8px; margin-top:13px; }
-.controls button { min-height:53px; padding:9px 6px; font-size:12px; }
-.controls .primary { background:linear-gradient(145deg,#e12a38,#760e1a); }
-.voice-info { color:var(--muted); font-size:11px; margin-top:13px; text-align:center; }
-.note { color:#896e73; font-size:10px; line-height:1.45; text-align:center; margin:15px 8px 0; }
 
-@media (max-width:380px) {
-  .controls { grid-template-columns:1fr 1fr; }
-  .controls button:last-child { grid-column:span 2; }
-  .reactor-wrap { width:min(82vw,300px); }
+.panel-title {
+  color: #ff737c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
 }
+
+#antwort {
+  min-height: 44px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #fff0f1;
+  line-height: 1.55;
+}
+
+form {
+  display: flex;
+  gap: 7px;
+  align-items: stretch;
+}
+
+input {
+  min-width: 0;
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  border-radius: 11px;
+  padding: 13px;
+  background: #100b0e;
+  color: white;
+  border: 1px solid #71303a;
+  font-size: 16px;
+}
+
+button {
+  border: 1px solid #ff5661;
+  border-radius: 11px;
+  padding: 12px 15px;
+  background: linear-gradient(145deg,#a71926,#510b13);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(255,40,55,.13);
+}
+
+button:disabled {
+  opacity: .5;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.controls button {
+  min-height: 53px;
+  padding: 9px 6px;
+  font-size: 12px;
+}
+
+.controls .primary {
+  background: linear-gradient(145deg,#e12a38,#760e1a);
+}
+
+.voice-info {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 13px;
+  text-align: center;
+}
+
+.note {
+  color: #896e73;
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: center;
+  margin: 15px 8px 0;
+}
+
+@media (max-width: 380px) {
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .controls button:last-child {
+    grid-column: span 2;
+  }
+
+  .reactor-wrap {
+    width: min(82vw,300px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 </style>
 </head>
 
 <body data-state="idle">
+
 <main class="app">
+
   <header>
     <div class="topline">
       <div style="text-align:left">
         <h1>J.A.R.V.I.S.</h1>
         <div class="kicker">PERSONAL AI COMMAND CENTER</div>
       </div>
-      <div class="pill" id="connectionPill">LLAMA AI · READY</div>
+
+      <div class="pill" id="connectionPill">
+        LLAMA AI · READY
+      </div>
     </div>
   </header>
 
-  <div class="status" id="status" aria-live="polite">SYSTEM BEREIT</div>
+  <div class="status" id="status" aria-live="polite">
+    SYSTEM BEREIT
+  </div>
 
-  <section class="reactor-wrap" aria-label="Animierter JARVIS-Reaktorkern">
+  <section class="reactor-wrap" aria-label="JARVIS Reaktorkern">
+
     <div class="ring one"></div>
     <div class="ring two"></div>
     <div class="ring three"></div>
     <div class="ring four"></div>
     <div class="core"></div>
     <div class="scan"></div>
+
     <div class="wave" aria-hidden="true">
-      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i>
     </div>
+
   </section>
 
   <section class="state-row" aria-label="JARVIS Status">
-    <div class="state-card" id="stateListen"><span class="symbol">◉</span>HÖRT ZU</div>
-    <div class="state-card" id="stateThink"><span class="symbol">◇</span>DENKT</div>
-    <div class="state-card" id="stateSpeak"><span class="symbol">≋</span>SPRICHT</div>
+
+    <div class="state-card" id="stateListen">
+      <span class="symbol">◉</span>
+      HÖRT ZU
+    </div>
+
+    <div class="state-card" id="stateThink">
+      <span class="symbol">◇</span>
+      DENKT
+    </div>
+
+    <div class="state-card" id="stateSpeak">
+      <span class="symbol">≋</span>
+      SPRICHT
+    </div>
+
   </section>
 
   <section class="panel">
-    <div class="panel-title">JARVIS · ANTWORT</div>
-    <p id="antwort" aria-live="polite">Guten Tag. Ich bin JARVIS. Wie kann ich dir helfen?</p>
+
+    <div class="panel-title">
+      JARVIS · ANTWORT
+    </div>
+
+    <p id="antwort" aria-live="polite">
+      Guten Tag. Ich bin JARVIS. Wie kann ich dir helfen?
+    </p>
 
     <form id="chatForm">
-      <input id="eingabe" type="text" placeholder="Schreibe eine Nachricht..." autocomplete="off" maxlength="2000">
-      <button id="sendenButton" type="submit">Senden</button>
+
+      <input
+        id="eingabe"
+        type="text"
+        placeholder="Schreibe eine Nachricht..."
+        autocomplete="off"
+        maxlength="2000"
+      >
+
+      <button id="sendenButton" type="submit">
+        Senden
+      </button>
+
     </form>
 
     <div class="controls">
-      <button type="button" class="primary" id="sprechButton">🎙 Freisprechen starten</button>
-      <button type="button" id="testButton">🔊 Stimme testen</button>
-      <button type="button" id="stoppButton">■ Stopp</button>
+
+      <button
+        type="button"
+        class="primary"
+        id="sprechButton"
+      >
+        🎙 Freisprechen starten
+      </button>
+
+      <button
+        type="button"
+        id="testButton"
+      >
+        🔊 Stimme testen
+      </button>
+
+      <button
+        type="button"
+        id="stoppButton"
+      >
+        ■ Stopp
+      </button>
+
     </div>
-    <div class="voice-info" id="voiceInfo">Sprachsystem wird geladen ...</div>
+
+    <div class="voice-info" id="voiceInfo">
+      Sprachsystem wird geladen ...
+    </div>
+
   </section>
 
-  <p class="note">JARVIS RED CORE · SPRACHSTEUERUNG AM BESTEN IN SAFARI</p>
+  <p class="note">
+    JARVIS RED CORE · SPRACHSTEUERUNG AM BESTEN IN SAFARI
+  </p>
+
 </main>
 
 <script>
 'use strict';
+
+/* ==========================================
+   JARVIS – SYSTEM UND ELEMENTE
+========================================== */
 
 const antwort = document.getElementById('antwort');
 const status = document.getElementById('status');
@@ -334,6 +673,8 @@ const feld = document.getElementById('eingabe');
 const sendenButton = document.getElementById('sendenButton');
 const voiceInfo = document.getElementById('voiceInfo');
 const sprechButton = document.getElementById('sprechButton');
+const testButton = document.getElementById('testButton');
+const stoppButton = document.getElementById('stoppButton');
 const connectionPill = document.getElementById('connectionPill');
 
 let recognition = null;
@@ -344,33 +685,74 @@ let sprichtGerade = false;
 let neustartTimer = null;
 let startLaeuft = false;
 let recognitionGeneration = 0;
+let speechGeneration = 0;
+
+
+/* ==========================================
+   SERVICE WORKER
+========================================== */
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('JARVIS App aktiviert'))
+      .catch(error => console.error('Service Worker:', error));
+  });
+}
+
+
+/* ==========================================
+   STATUS
+========================================== */
 
 function setState(state, label) {
   document.body.dataset.state = state;
   status.textContent = label;
 }
 
+
+/* ==========================================
+   SPRACHEN LADEN
+========================================== */
+
 function stimmenLaden() {
+
   if (!('speechSynthesis' in window)) {
-    voiceInfo.textContent = 'Sprachausgabe wird nicht unterstützt.';
+    voiceInfo.textContent =
+      'Sprachausgabe wird nicht unterstützt.';
     return;
   }
+
   const voices = speechSynthesis.getVoices();
-  const german = voices.filter(v => (v.lang || '').toLowerCase().startsWith('de'));
+
+  const german = voices.filter(voice =>
+    (voice.lang || '').toLowerCase().startsWith('de')
+  );
+
   if (!german.length) {
-    voiceInfo.textContent = 'Keine deutsche Stimme verfügbar.';
+    voiceInfo.textContent =
+      'Keine deutsche Stimme verfügbar.';
     return;
   }
+
   ausgewaehlteStimme =
-    german.find(v => /anna|marlene|vicki|petra|female|siri/i.test(v.name)) ||
-    german[0];
-  voiceInfo.textContent = 'Aktive Stimme: ' + ausgewaehlteStimme.name;
+    german.find(voice =>
+      /anna|marlene|vicki|petra|female|siri/i.test(voice.name)
+    ) || german[0];
+
+  voiceInfo.textContent =
+    'Aktive Stimme: ' + ausgewaehlteStimme.name;
 }
 
 if ('speechSynthesis' in window) {
   stimmenLaden();
   speechSynthesis.addEventListener?.('voiceschanged', stimmenLaden);
 }
+
+
+/* ==========================================
+   MIKROFON-STEUERUNG
+========================================== */
 
 function clearRestart() {
   if (neustartTimer !== null) {
@@ -380,132 +762,289 @@ function clearRestart() {
 }
 
 function stopRecognition() {
+
   const old = recognition;
+
   recognition = null;
   startLaeuft = false;
+
   if (old) {
-    old.onstart = old.onresult = old.onerror = old.onend = null;
-    try { old.abort(); } catch (_) {}
+    old.onstart = null;
+    old.onresult = null;
+    old.onerror = null;
+    old.onend = null;
+
+    try {
+      old.abort();
+    } catch (_) {}
   }
 }
 
 function planListen() {
+
   clearRestart();
-  if (!freisprechenAktiv || anfrageLaeuft || sprichtGerade || recognition || startLaeuft) return;
+
+  if (
+    !freisprechenAktiv ||
+    anfrageLaeuft ||
+    sprichtGerade ||
+    recognition ||
+    startLaeuft ||
+    document.hidden
+  ) {
+    return;
+  }
+
   neustartTimer = setTimeout(() => {
     neustartTimer = null;
     startListening();
-  }, 900);
+  }, 1000);
 }
 
+
+/* ==========================================
+   SPRACHAUSGABE
+========================================== */
+
 function speak(text) {
+
   return new Promise(resolve => {
+
     if (!('speechSynthesis' in window)) {
-      voiceInfo.textContent = 'Sprachausgabe nicht verfügbar.';
+      voiceInfo.textContent =
+        'Sprachausgabe nicht verfügbar.';
       resolve();
       return;
     }
+
+    clearRestart();
     stopRecognition();
+
+    const generation = ++speechGeneration;
+
     speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
+
     utterance.lang = 'de-DE';
     utterance.rate = 0.92;
     utterance.pitch = 1.05;
     utterance.volume = 1;
-    if (ausgewaehlteStimme) utterance.voice = ausgewaehlteStimme;
 
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      sprichtGerade = false;
-      setState('idle', 'SYSTEM BEREIT');
+    if (ausgewaehlteStimme) {
+      utterance.voice = ausgewaehlteStimme;
+    }
+
+    let finished = false;
+
+    function finish() {
+
+      if (finished) return;
+
+      finished = true;
+
+      if (generation === speechGeneration) {
+        sprichtGerade = false;
+      }
+
       resolve();
-    };
+    }
 
     utterance.onstart = () => {
+
+      if (generation !== speechGeneration) return;
+
       sprichtGerade = true;
-      setState('speaking', 'JARVIS SPRICHT');
+
+      setState(
+        'speaking',
+        'JARVIS SPRICHT'
+      );
     };
+
     utterance.onend = finish;
     utterance.onerror = finish;
+
     speechSynthesis.speak(utterance);
   });
 }
 
-async function askAI(text) {
-  setState('thinking', 'JARVIS DENKT NACH');
-  antwort.textContent = 'JARVIS denkt nach ...';
-  connectionPill.textContent = 'LLAMA AI · WORKING';
+
+/* ==========================================
+   LLAMA AI VERBINDUNG
+========================================== */
+
+async function askAI(message) {
+
+  setState(
+    'thinking',
+    'JARVIS DENKT NACH'
+  );
+
+  antwort.textContent =
+    'JARVIS denkt nach ...';
+
+  connectionPill.textContent =
+    'LLAMA AI · WORKING';
 
   try {
+
     const response = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+        message: message
+      })
     });
 
     let data;
-    try { data = await response.json(); }
-    catch (_) { throw new Error('Der Server hat keine gültige Antwort geliefert.'); }
+
+    try {
+      data = await response.json();
+    } catch (_) {
+      throw new Error(
+        'Der Server hat keine gültige Antwort geliefert.'
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || `Serverfehler (${response.status}).`);
-    }
-    if (typeof data.answer !== 'string' || !data.answer.trim()) {
-      throw new Error('Llama hat keine Antwort geliefert.');
+      throw new Error(
+        data.error || `Serverfehler (${response.status})`
+      );
     }
 
-    connectionPill.textContent = 'LLAMA AI · ONLINE';
+    if (
+      typeof data.answer !== 'string' ||
+      !data.answer.trim()
+    ) {
+      throw new Error(
+        'Llama hat keine Antwort geliefert.'
+      );
+    }
+
+    connectionPill.textContent =
+      'LLAMA AI · ONLINE';
+
     antwort.textContent = data.answer;
+
     await speak(data.answer);
+
   } catch (error) {
-    console.error('JARVIS:', error);
-    connectionPill.textContent = 'LLAMA AI · CHECK';
-    antwort.textContent = 'Fehler: ' + (error.message || 'Verbindung fehlgeschlagen.');
-    setState('error', 'VERBINDUNGSFEHLER');
+
+    console.error('JARVIS Fehler:', error);
+
+    connectionPill.textContent =
+      'LLAMA AI · CHECK';
+
+    antwort.textContent =
+      'Fehler: ' +
+      (error.message || 'Verbindung fehlgeschlagen.');
+
+    setState(
+      'error',
+      'VERBINDUNGSFEHLER'
+    );
   }
 }
 
-async function sendMessage(text) {
+
+/* ==========================================
+   NACHRICHT SENDEN
+========================================== */
+
+async function sendMessage(message) {
+
+  const text = message.trim();
+
   if (!text || anfrageLaeuft) return;
+
   anfrageLaeuft = true;
+
   clearRestart();
+
   sendenButton.disabled = true;
+
   stopRecognition();
 
   try {
+
     await askAI(text);
+
   } finally {
+
     anfrageLaeuft = false;
+
     sendenButton.disabled = false;
-    if (freisprechenAktiv) planListen();
-    else if (document.body.dataset.state !== 'error') setState('idle', 'SYSTEM BEREIT');
+
+    if (freisprechenAktiv) {
+      planListen();
+    } else if (document.body.dataset.state !== 'error') {
+      setState('idle', 'SYSTEM BEREIT');
+    }
   }
 }
 
-document.getElementById('chatForm').addEventListener('submit', async event => {
-  event.preventDefault();
-  const text = feld.value.trim();
-  if (!text || anfrageLaeuft) return;
-  feld.value = '';
-  await sendMessage(text);
-});
+
+/* ==========================================
+   TEXTEINGABE
+========================================== */
+
+document.getElementById('chatForm')
+  .addEventListener('submit', async event => {
+
+    event.preventDefault();
+
+    const message = feld.value.trim();
+
+    if (!message || anfrageLaeuft) return;
+
+    feld.value = '';
+
+    await sendMessage(message);
+  });
+
+
+/* ==========================================
+   SPRACHERKENNUNG
+========================================== */
 
 function startListening() {
-  if (!freisprechenAktiv || anfrageLaeuft || sprichtGerade || recognition || startLaeuft) return;
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (
+    !freisprechenAktiv ||
+    anfrageLaeuft ||
+    sprichtGerade ||
+    recognition ||
+    startLaeuft ||
+    document.hidden
+  ) {
+    return;
+  }
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
   if (!SpeechRecognition) {
-    antwort.textContent = 'Spracherkennung wird von diesem Browser nicht unterstützt. Bitte Safari verwenden.';
+
+    antwort.textContent =
+      'Spracherkennung wird von diesem Browser nicht unterstützt. Bitte Safari verwenden.';
+
     stopHandsFree();
+
     return;
   }
 
   startLaeuft = true;
+
   const instanceId = ++recognitionGeneration;
+
   const rec = new SpeechRecognition();
+
   recognition = rec;
 
   rec.lang = 'de-DE';
@@ -514,929 +1053,252 @@ function startListening() {
   rec.maxAlternatives = 1;
 
   rec.onstart = () => {
+
     startLaeuft = false;
-    if (freisprechenAktiv && recognition === rec) setState('listening', 'JARVIS HÖRT ZU');
+
+    if (
+      freisprechenAktiv &&
+      recognition === rec
+    ) {
+      setState(
+        'listening',
+        'JARVIS HÖRT ZU'
+      );
+    }
   };
 
   rec.onresult = event => {
-    if (!freisprechenAktiv || anfrageLaeuft || recognition !== rec) return;
+
+    if (
+      !freisprechenAktiv ||
+      anfrageLaeuft ||
+      recognition !== rec
+    ) {
+      return;
+    }
+
     const result = event.results[event.resultIndex];
-    const transcript = result && result[0] ? result[0].transcript.trim() : '';
+
+    const transcript =
+      result && result[0]
+        ? result[0].transcript.trim()
+        : '';
+
     if (!transcript) return;
+
     feld.value = transcript;
+
     sendMessage(transcript);
   };
 
   rec.onerror = event => {
-    console.warn('Spracherkennung:', event.error);
-    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-      antwort.textContent = 'Mikrofonzugriff verweigert. Bitte die Mikrofonberechtigung für Safari prüfen.';
+
+    console.warn(
+      'Spracherkennung:',
+      event.error
+    );
+
+    if (
+      event.error === 'not-allowed' ||
+      event.error === 'service-not-allowed'
+    ) {
+
+      antwort.textContent =
+        'Mikrofonzugriff verweigert. Bitte die Mikrofonberechtigung für Safari prüfen.';
+
       stopHandsFree();
+
     } else if (event.error === 'audio-capture') {
-      antwort.textContent = 'Das Mikrofon konnte nicht angesprochen werden.';
+
+      antwort.textContent =
+        'Das Mikrofon konnte nicht angesprochen werden.';
     }
   };
 
   rec.onend = () => {
-    if (recognition === rec) recognition = null;
+
+    if (recognition === rec) {
+      recognition = null;
+    }
+
     startLaeuft = false;
-    if (instanceId !== recognitionGeneration) return;
-    if (freisprechenAktiv && !anfrageLaeuft && !sprichtGerade) {
-      setState('idle', 'SYSTEM BEREIT');
+
+    if (instanceId !== recognitionGeneration) {
+      return;
+    }
+
+    if (
+      freisprechenAktiv &&
+      !anfrageLaeuft &&
+      !sprichtGerade
+    ) {
+
+      setState(
+        'idle',
+        'SYSTEM BEREIT'
+      );
+
       planListen();
     }
   };
 
   try {
+
     rec.start();
+
   } catch (error) {
+
     console.warn('Mikrofonstart:', error);
-    if (recognition === rec) recognition = null;
+
+    if (recognition === rec) {
+      recognition = null;
+    }
+
     startLaeuft = false;
+
     planListen();
   }
 }
 
+
+/* ==========================================
+   FREISPRECHMODUS
+========================================== */
+
 function startHandsFree() {
+
   if (freisprechenAktiv) return;
+
   freisprechenAktiv = true;
-  sprechButton.textContent = '🔴 Freisprechen beenden';
-  sprechButton.classList.add('primary');
-  antwort.textContent = 'JARVIS ist bereit. Ich höre dir zu.';
+
+  sprechButton.textContent =
+    '🔴 Freisprechen beenden';
+
+  antwort.textContent =
+    'JARVIS ist bereit. Ich höre dir zu.';
+
   startListening();
 }
 
 function stopHandsFree() {
+
   freisprechenAktiv = false;
+
   clearRestart();
+
   recognitionGeneration++;
+
   stopRecognition();
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
+
+  speechGeneration++;
+
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+  }
+
   sprichtGerade = false;
-  sprechButton.textContent = '🎙 Freisprechen starten';
-  setState('idle', 'SYSTEM BEREIT');
+
+  sprechButton.textContent =
+    '🎙 Freisprechen starten';
+
+  setState(
+    'idle',
+    'SYSTEM BEREIT'
+  );
 }
 
 sprechButton.addEventListener('click', () => {
-  if (freisprechenAktiv) stopHandsFree();
-  else startHandsFree();
+
+  if (freisprechenAktiv) {
+    stopHandsFree();
+  } else {
+    startHandsFree();
+  }
 });
 
-document.getElementById('testButton').addEventListener('click', async () => {
+
+/* ==========================================
+   STIMME TESTEN
+========================================== */
+
+testButton.addEventListener('click', async () => {
+
   clearRestart();
-  await speak('Hallo. Ich bin JARVIS. Wie kann ich dir heute helfen?');
-  if (freisprechenAktiv) planListen();
-});
 
-document.getElementById('stoppButton').addEventListener('click', () => {
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
-  sprichtGerade = false;
-  setState('idle', 'SYSTEM BEREIT');
-  if (freisprechenAktiv) planListen();
-});
+  await speak(
+    'Hallo. Ich bin JARVIS. Wie kann ich dir heute helfen?'
+  );
 
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    clearRestart();
-    stopRecognition();
-  } else if (freisprechenAktiv && !anfrageLaeuft && !sprichtGerade) {
+  if (freisprechenAktiv) {
     planListen();
   }
 });
 
-setState('idle', 'SYSTEM BEREIT');
-connectionPill.textContent = 'LLAMA AI · READY';
-console.log('J.A.R.V.I.S. RED CORE erfolgreich gestartet.');
-</script>
-</body>
-</html>
 
-body {
-    margin: 0;
-    background: radial-gradient(circle, #102c50, #030711 75%);
-    color: #e5faff;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    min-height: 100vh;
-    padding: 25px 15px;
-}
+/* ==========================================
+   STOPP
+========================================== */
 
-h1 {
-    letter-spacing: 8px;
-    color: #76edff;
-}
+stoppButton.addEventListener('click', () => {
 
-.status {
-    color: #64f7cb;
-    font-size: 12px;
-    letter-spacing: 3px;
-}
+  speechGeneration++;
 
-.core {
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    border: 2px solid #61eaff;
-    margin: 65px auto 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 35px #148dff66;
-    position: relative;
-    animation: glow 3s infinite;
-}
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+  }
 
-.core:before {
-    content: "";
-    position: absolute;
-    inset: 18px;
-    border: 2px dashed #64eaff;
-    border-radius: 50%;
-    animation: rotate 18s linear infinite;
-}
+  sprichtGerade = false;
 
-.orb {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    background: radial-gradient(
-        circle at 30% 25%,
-        white,
-        #63eaff 25%,
-        #0872cc 65%,
-        #06142a
-    );
-    box-shadow: 0 0 40px #39dfff;
-}
+  setState(
+    'idle',
+    'SYSTEM BEREIT'
+  );
 
-@keyframes rotate {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes glow {
-    50% { box-shadow: 0 0 55px #148dffbb; }
-}
-
-button, input {
-    border-radius: 13px;
-    padding: 14px;
-    margin: 5px;
-    font-size: 16px;
-}
-
-button {
-    background: #104b83;
-    color: white;
-    border: 1px solid #65eaff;
-    cursor: pointer;
-}
-
-button:disabled {
-    opacity: 0.6;
-}
-
-input {
-    width: 65%;
-    max-width: 100%;
-    background: #061326;
-    color: white;
-    border: 1px solid #4384aa;
-}
-
-.panel {
-    background: #061326cc;
-    border: 1px solid #28638a;
-    border-radius: 15px;
-    padding: 18px;
-    margin-top: 25px;
-    line-height: 1.5;
-}
-
-#antwort {
-    min-height: 35px;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.voice-info {
-    color: #91c9df;
-    font-size: 12px;
-    margin-top: 12px;
-}
-
-@media (max-width: 500px) {
-    .core {
-        width: 190px;
-        height: 190px;
-        margin: 45px auto 30px;
-    }
-
-    input {
-        width: 90%;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<h1>J.A.R.V.I.S.</h1>
-
-<div class="status" id="status">
-    SYSTEM BEREIT
-</div>
-
-<div class="core" id="core">
-    <div class="orb"></div>
-</div>
-
-<button type="button" id="sprechButton">
-    🎙 Mit JARVIS sprechen
-</button>
-
-<button type="button" id="testButton">
-    🔊 Stimme testen
-</button>
-
-<button type="button" id="stoppButton">
-    Stimme aus
-</button>
-
-<div class="panel">
-
-    <strong>JARVIS · ANTWORT</strong>
-
-    <p id="antwort">
-        Guten Tag. Ich bin JARVIS. Wie kann ich dir helfen?
-    </p>
-
-    <form id="chatForm">
-
-        <input
-            id="eingabe"
-            type="text"
-            placeholder="Schreibe eine Nachricht..."
-            autocomplete="off"
-            maxlength="2000"
-        >
-
-        <button id="sendenButton" type="submit">
-            Senden
-        </button>
-
-    </form>
-
-    <div class="voice-info" id="voiceInfo">
-        Sprachsystem wird geladen ...
-    </div>
-
-</div>
-
-<script>
-'use strict';
-
-// ==========================================
-// J.A.R.V.I.S. – RED CORE
-// SPRACHSTEUERUNG UND KI-VERBINDUNG
-// ==========================================
-
-// HTML-Elemente
-const antwort = document.getElementById('antwort');
-const status = document.getElementById('status');
-const feld = document.getElementById('eingabe');
-const sendenButton = document.getElementById('sendenButton');
-const voiceInfo = document.getElementById('voiceInfo');
-const sprechButton = document.getElementById('sprechButton');
-const connectionPill = document.getElementById('connectionPill');
-
-// Systemvariablen
-let recognition = null;
-let ausgewaehlteStimme = null;
-let freisprechenAktiv = false;
-let anfrageLaeuft = false;
-let sprichtGerade = false;
-let neustartTimer = null;
-let startLaeuft = false;
-let recognitionGeneration = 0;
-
-
-// ==========================================
-// SERVICE WORKER
-// ==========================================
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(() => console.log('JARVIS App aktiviert'))
-            .catch(error => console.error('App-Fehler:', error));
-    });
-}
-
-
-// ==========================================
-// STATUSSTEUERUNG
-// ==========================================
-
-function setState(state, label) {
-    document.body.dataset.state = state;
-    status.textContent = label;
-}
-
-
-// ==========================================
-// DEUTSCHE SPRACHAUSGABE
-// ==========================================
-
-function stimmenLaden() {
-
-    if (!('speechSynthesis' in window)) {
-        voiceInfo.textContent =
-            'Sprachausgabe wird nicht unterstützt.';
-        return;
-    }
-
-    const voices = speechSynthesis.getVoices();
-
-    const german = voices.filter(v =>
-        (v.lang || '').toLowerCase().startsWith('de')
-    );
-
-    if (!german.length) {
-        voiceInfo.textContent =
-            'Keine deutsche Stimme verfügbar.';
-        return;
-    }
-
-    ausgewaehlteStimme =
-        german.find(v =>
-            /anna|marlene|vicki|petra|female|siri/i.test(v.name)
-        ) || german[0];
-
-    voiceInfo.textContent =
-        'Aktive Stimme: ' + ausgewaehlteStimme.name;
-}
-
-if ('speechSynthesis' in window) {
-    stimmenLaden();
-    speechSynthesis.addEventListener?.(
-        'voiceschanged',
-        stimmenLaden
-    );
-}
-
-
-// ==========================================
-// MIKROFON UND NEUSTART
-// ==========================================
-
-function clearRestart() {
-
-    if (neustartTimer !== null) {
-        clearTimeout(neustartTimer);
-        neustartTimer = null;
-    }
-}
-
-function stopRecognition() {
-
-    const old = recognition;
-
-    recognition = null;
-    startLaeuft = false;
-
-    if (old) {
-        old.onstart = null;
-        old.onresult = null;
-        old.onerror = null;
-        old.onend = null;
-
-        try {
-            old.abort();
-        } catch (_) {}
-    }
-}
-
-function planListen() {
-
-    clearRestart();
-
-    if (
-        !freisprechenAktiv ||
-        anfrageLaeuft ||
-        sprichtGerade ||
-        recognition ||
-        startLaeuft
-    ) {
-        return;
-    }
-
-    neustartTimer = setTimeout(() => {
-        neustartTimer = null;
-        startListening();
-    }, 900);
-}
-
-
-// ==========================================
-// JARVIS SPRICHT
-// ==========================================
-
-function speak(text) {
-
-    return new Promise(resolve => {
-
-        if (!('speechSynthesis' in window)) {
-            voiceInfo.textContent =
-                'Sprachausgabe nicht verfügbar.';
-            resolve();
-            return;
-        }
-
-        stopRecognition();
-        speechSynthesis.cancel();
-
-        const utterance =
-            new SpeechSynthesisUtterance(text);
-
-        utterance.lang = 'de-DE';
-        utterance.rate = 0.92;
-        utterance.pitch = 1.05;
-        utterance.volume = 1;
-
-        if (ausgewaehlteStimme) {
-            utterance.voice = ausgewaehlteStimme;
-        }
-
-        let done = false;
-
-        const finish = () => {
-
-            if (done) return;
-
-            done = true;
-            sprichtGerade = false;
-
-            setState('idle', 'SYSTEM BEREIT');
-
-            resolve();
-        };
-
-        utterance.onstart = () => {
-
-            sprichtGerade = true;
-
-            setState(
-                'speaking',
-                'JARVIS SPRICHT'
-            );
-        };
-
-        utterance.onend = finish;
-        utterance.onerror = finish;
-
-        speechSynthesis.speak(utterance);
-    });
-}
-
-
-// ==========================================
-// VERBINDUNG MIT LLAMA AI
-// ==========================================
-
-async function askAI(text) {
-
-    setState(
-        'thinking',
-        'JARVIS DENKT NACH'
-    );
-
-    antwort.textContent =
-        'JARVIS denkt nach ...';
-
-    connectionPill.textContent =
-        'LLAMA AI · WORKING';
-
-    try {
-
-        const response = await fetch('/api/chat', {
-
-            method: 'POST',
-
-            headers: {
-                'Content-Type': 'application/json'
-            },
-
-            body: JSON.stringify({
-                message: text
-            })
-        });
-
-        let data;
-
-        try {
-            data = await response.json();
-        } catch (_) {
-            throw new Error(
-                'Der Server hat keine gültige Antwort geliefert.'
-            );
-        }
-
-        if (!response.ok) {
-            throw new Error(
-                data.error ||
-                `Serverfehler (${response.status}).`
-            );
-        }
-
-        if (
-            typeof data.answer !== 'string' ||
-            !data.answer.trim()
-        ) {
-            throw new Error(
-                'Llama hat keine Antwort geliefert.'
-            );
-        }
-
-        connectionPill.textContent =
-            'LLAMA AI · ONLINE';
-
-        antwort.textContent = data.answer;
-
-        await speak(data.answer);
-
-    } catch (error) {
-
-        console.error('JARVIS:', error);
-
-        connectionPill.textContent =
-            'LLAMA AI · CHECK';
-
-        antwort.textContent =
-            'Fehler: ' +
-            (error.message ||
-            'Verbindung fehlgeschlagen.');
-
-        setState(
-            'error',
-            'VERBINDUNGSFEHLER'
-        );
-    }
-}
-
-
-// ==========================================
-// NACHRICHT SENDEN
-// ==========================================
-
-async function sendMessage(text) {
-
-    if (!text || anfrageLaeuft) return;
-
-    anfrageLaeuft = true;
-
-    clearRestart();
-    sendenButton.disabled = true;
-
-    stopRecognition();
-
-    try {
-
-        await askAI(text);
-
-    } finally {
-
-        anfrageLaeuft = false;
-        sendenButton.disabled = false;
-
-        if (freisprechenAktiv) {
-            planListen();
-        } else if (
-            document.body.dataset.state !== 'error'
-        ) {
-            setState(
-                'idle',
-                'SYSTEM BEREIT'
-            );
-        }
-    }
-}
-
-
-// ==========================================
-// TEXT EINGEBEN UND SENDEN
-// ==========================================
-
-document.getElementById('chatForm')
-    .addEventListener('submit', async event => {
-
-        event.preventDefault();
-
-        const text = feld.value.trim();
-
-        if (!text || anfrageLaeuft) return;
-
-        feld.value = '';
-
-        await sendMessage(text);
-    });
-
-
-// ==========================================
-// SPRACHERKENNUNG STARTEN
-// ==========================================
-
-function startListening() {
-
-    if (
-        !freisprechenAktiv ||
-        anfrageLaeuft ||
-        sprichtGerade ||
-        recognition ||
-        startLaeuft
-    ) {
-        return;
-    }
-
-    const SpeechRecognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-
-        antwort.textContent =
-            'Spracherkennung wird von diesem Browser ' +
-            'nicht unterstützt. Bitte Safari verwenden.';
-
-        stopHandsFree();
-        return;
-    }
-
-    startLaeuft = true;
-
-    const instanceId = ++recognitionGeneration;
-
-    const rec = new SpeechRecognition();
-
-    recognition = rec;
-
-    rec.lang = 'de-DE';
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-
-    rec.onstart = () => {
-
-        startLaeuft = false;
-
-        if (
-            freisprechenAktiv &&
-            recognition === rec
-        ) {
-            setState(
-                'listening',
-                'JARVIS HÖRT ZU'
-            );
-        }
-    };
-
-    rec.onresult = event => {
-
-        if (
-            !freisprechenAktiv ||
-            anfrageLaeuft ||
-            recognition !== rec
-        ) {
-            return;
-        }
-
-        const result =
-            event.results[event.resultIndex];
-
-        const transcript =
-            result && result[0]
-                ? result[0].transcript.trim()
-                : '';
-
-        if (!transcript) return;
-
-        feld.value = transcript;
-
-        sendMessage(transcript);
-    };
-
-    rec.onerror = event => {
-
-        console.warn(
-            'Spracherkennung:',
-            event.error
-        );
-
-        if (
-            event.error === 'not-allowed' ||
-            event.error === 'service-not-allowed'
-        ) {
-
-            antwort.textContent =
-                'Mikrofonzugriff verweigert. ' +
-                'Bitte die Mikrofonberechtigung für Safari prüfen.';
-
-            stopHandsFree();
-
-        } else if (
-            event.error === 'audio-capture'
-        ) {
-
-            antwort.textContent =
-                'Das Mikrofon konnte nicht angesprochen werden.';
-        }
-    };
-
-    rec.onend = () => {
-
-        if (recognition === rec) {
-            recognition = null;
-        }
-
-        startLaeuft = false;
-
-        if (instanceId !== recognitionGeneration) {
-            return;
-        }
-
-        if (
-            freisprechenAktiv &&
-            !anfrageLaeuft &&
-            !sprichtGerade
-        ) {
-
-            setState(
-                'idle',
-                'SYSTEM BEREIT'
-            );
-
-            planListen();
-        }
-    };
-
-    try {
-
-        rec.start();
-
-    } catch (error) {
-
-        console.warn(
-            'Mikrofonstart:',
-            error
-        );
-
-        if (recognition === rec) {
-            recognition = null;
-        }
-
-        startLaeuft = false;
-
-        planListen();
-    }
-}
-
-
-// ==========================================
-// FREISPRECHMODUS
-// ==========================================
-
-function startHandsFree() {
-
-    if (freisprechenAktiv) return;
-
-    freisprechenAktiv = true;
-
-    sprechButton.textContent =
-        '🔴 Freisprechen beenden';
-
-    sprechButton.classList.add('primary');
-
-    antwort.textContent =
-        'JARVIS ist bereit. Ich höre dir zu.';
-
-    startListening();
-}
-
-function stopHandsFree() {
-
-    freisprechenAktiv = false;
-
-    clearRestart();
-
-    recognitionGeneration++;
-
-    stopRecognition();
-
-    if ('speechSynthesis' in window) {
-        speechSynthesis.cancel();
-    }
-
-    sprichtGerade = false;
-
-    sprechButton.textContent =
-        '🎙 Freisprechen starten';
-
-    setState(
-        'idle',
-        'SYSTEM BEREIT'
-    );
-}
-
-sprechButton.addEventListener('click', () => {
-
-    if (freisprechenAktiv) {
-        stopHandsFree();
-    } else {
-        startHandsFree();
-    }
+  if (freisprechenAktiv) {
+    planListen();
+  }
 });
 
 
-// ==========================================
-// STIMME TESTEN
-// ==========================================
+/* ==========================================
+   APP SICHTBARKEIT
+========================================== */
 
-document.getElementById('testButton')
-    .addEventListener('click', async () => {
+document.addEventListener('visibilitychange', () => {
 
-        clearRestart();
+  if (document.hidden) {
 
-        await speak(
-            'Hallo. Ich bin JARVIS. ' +
-            'Wie kann ich dir heute helfen?'
-        );
+    clearRestart();
 
-        if (freisprechenAktiv) {
-            planListen();
-        }
-    });
+    stopRecognition();
 
+  } else if (
+    freisprechenAktiv &&
+    !anfrageLaeuft &&
+    !sprichtGerade
+  ) {
 
-// ==========================================
-// SPRACHAUSGABE STOPPEN
-// ==========================================
-
-document.getElementById('stoppButton')
-    .addEventListener('click', () => {
-
-        if ('speechSynthesis' in window) {
-            speechSynthesis.cancel();
-        }
-
-        sprichtGerade = false;
-
-        setState(
-            'idle',
-            'SYSTEM BEREIT'
-        );
-
-        if (freisprechenAktiv) {
-            planListen();
-        }
-    });
+    planListen();
+  }
+});
 
 
-// ==========================================
-// APP SICHTBARKEIT
-// ==========================================
-
-document.addEventListener(
-    'visibilitychange',
-    () => {
-
-        if (document.hidden) {
-
-            clearRestart();
-            stopRecognition();
-
-        } else if (
-            freisprechenAktiv &&
-            !anfrageLaeuft &&
-            !sprichtGerade
-        ) {
-
-            planListen();
-        }
-    }
-);
-
-
-// ==========================================
-// SYSTEMSTART
-// ==========================================
+/* ==========================================
+   SYSTEMSTART
+========================================== */
 
 setState(
-    'idle',
-    'SYSTEM BEREIT'
+  'idle',
+  'SYSTEM BEREIT'
 );
 
 connectionPill.textContent =
-    'LLAMA AI · READY';
+  'LLAMA AI · READY';
 
 console.log(
-    'J.A.R.V.I.S. RED CORE erfolgreich gestartet.'
+  'J.A.R.V.I.S. RED CORE erfolgreich gestartet.'
 );
+
+</script>
+</body>
+</html>
