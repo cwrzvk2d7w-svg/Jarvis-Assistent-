@@ -497,17 +497,23 @@ recognition.onspeechend = () => {
     };
 
     recognition.onresult = async (event) => {
-        const text = event.results[0][0].transcript.trim();
+    const text = event.results[0][0].transcript.trim();
 
-        if (!text) return;
+    if (!text) {
+        return;
+    }
 
-        feld.value = text;
-        anfrageLaeuft = true;
+    clearTimeout(hoerTimer);
 
+    anfrageLaeuft = true;
+    feld.value = text;
+
+    try {
         await senden();
+    } finally {
         anfrageLaeuft = false;
-    };
-
+    }
+};
     recognition.onerror = (event) => {
         console.log("Mikrofon:", event.error);
     };
