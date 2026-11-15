@@ -272,16 +272,27 @@ if ('speechSynthesis' in window) {
    JARVIS SPRICHT
 ================================= */
 
+
 function stimme(text) {
 
     if (!('speechSynthesis' in window)) {
         antwort.textContent +=
             '\n\nSprachausgabe nicht verfügbar.';
+        
+        if (freisprechenAktiv) {
+            setTimeout(mikrofonStarten, 1000);
+        }
         return;
     }
 
-    const synth = window.speechSynthesis;
+    // Mikrofon während der Antwort pausieren
+    if (recognition) {
+        try {
+            recognition.abort();
+        } catch (_) {}
+    }
 
+    const synth = window.speechSynthesis;
     synth.cancel();
 
     const u = new SpeechSynthesisUtterance(text);
@@ -301,11 +312,18 @@ function stimme(text) {
 
     u.onend = () => {
         status.textContent = 'SYSTEM BEREIT';
+
+        if (freisprechenAktiv) {
+            setTimeout(mikrofonStarten, 1000);
+        }
     };
 
-    u.onerror = (event) => {
-        console.error('Sprachausgabe:', event.error);
+    u.onerror = () => {
         status.textContent = 'SYSTEM BEREIT';
+
+        if (freisprechenAktiv) {
+            setTimeout(mikrofonStarten, 1000);
+        }
     };
 
     synth.speak(u);
@@ -433,65 +451,93 @@ document.getElementById('chatForm')
    SPRACHEINGABE
 ================================= */
 
-document.getElementById('sprechButton')
-    .addEventListener('click', () => {
+/* =================================
+   JARVIS FREIHAND-SPRACHMODUS
+================================= */
 
-        const Recognition =
-            window.SpeechRecognition ||
-            window.webkitSpeechRecognition;
+let hoerTimer = null;
 
-        if (!Recognition) {
+function mikrofonStarten() {
+    if (!freisprechenAktiv || anfrageLaeuft) return;
 
-            antwort.textContent =
-                'Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutze Safari oder das Textfeld.';
+    const Recognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
-            return;
+    if (!Recognition) {
+        antwort.textContent =
+            "Spracherkennung wird nicht unterstützt. Bitte Safari verwenden.";
+        freisprechenAktiv = false;
+        return;
+    }
+
+    if (recognition) {
+        try { recognition.abort(); } catch (_) {}
+    }
+
+    recognition = new Recognition();
+    recognition.lang = "de-DE";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        status.textContent = "JARVIS HÖRT ZU";
+    };
+
+    recognition.onresult = async (event) => {
+        const text = event.results[0][0].transcript.trim();
+
+        if (!text) return;
+
+        feld.value = text;
+        anfrageLaeuft = true;
+
+        await senden();
+        anfrageLaeuft = false;
+    };
+
+    recognition.onerror = (event) => {
+        console.log("Mikrofon:", event.error);
+    };
+
+    recognition.onend = () => {
+        if (freisprechenAktiv && !anfrageLaeuft) {
+            clearTimeout(hoerTimer);
+            hoerTimer = setTimeout(mikrofonStarten, 1000);
         }
+    };
 
-        if (recognition) {
-            recognition.abort();
-        }
+    try {
+        recognition.start();
+    } catch (error) {
+        console.log("Mikrofonstart:", error);
+    }
+}
 
-        recognition = new Recognition();
+document.getElementById("sprechButton")
+    .addEventListener("click", () => {
 
-        recognition.lang = 'de-DE';
-        recognition.continuous = false;
-        recognition.interimResults = false;
+        freisprechenAktiv = !freisprechenAktiv;
 
-        recognition.onstart = () => {
-            status.textContent = 'ICH HÖRE ZU';
-        };
+        if (freisprechenAktiv) {
+            document.getElementById("sprechButton").textContent =
+                "🔴 Freisprechen beenden";
 
-        recognition.onresult = (event) => {
+            mikrofonStarten();
+        } else {
+            clearTimeout(hoerTimer);
 
-            feld.value = event.results[0][0].transcript;
-
-            senden();
-        };
-
-        recognition.onerror = (event) => {
-
-            status.textContent = 'SYSTEM BEREIT';
-
-            antwort.textContent =
-                'Mikrofonfehler: ' + event.error;
-        };
-
-        recognition.onend = () => {
-
-            if (status.textContent === 'ICH HÖRE ZU') {
-                status.textContent = 'SYSTEM BEREIT';
+            if (recognition) {
+                try { recognition.abort(); } catch (_) {}
             }
-        };
 
-        try {
-            recognition.start();
-        } catch (error) {
-            antwort.textContent =
-                'Mikrofon konnte nicht gestartet werden.';
-            status.textContent = 'SYSTEM BEREIT';
+            status.textContent = "SYSTEM BEREIT";
+
+            document.getElementById("sprechButton").textContent =
+                "🎙 Freisprechen starten";
         }
     });
+
 
 
 /* =================================
