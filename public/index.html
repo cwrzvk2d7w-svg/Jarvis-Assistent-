@@ -218,6 +218,11 @@ const voiceInfo = document.getElementById('voiceInfo');
 let recognition = null;
 let ausgewaehlteStimme = null;
 
+// Freisprechmodus
+let freisprechenAktiv = false;
+let warteAufBefehl = false;
+let anfrageLaeuft = false;
+
 
 /* =================================
    JARVIS SPRACHAUSGABE
