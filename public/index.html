@@ -601,6 +601,18 @@ button:disabled {
     <div class="panel-title">
       JARVIS · ANTWORT
     </div>
+    <div id="teamStatus" style="
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid #71303a;
+  border-radius: 10px;
+  color: #ff9da2;
+  background: rgba(60,10,17,.42);
+  font-size: 12px;
+  text-align: center;
+">
+  KI-TEAM · STATUS WIRD GEPRÜFT
+</div>
 
     <p id="antwort" aria-live="polite">
       Guten Tag. Ich bin JARVIS. Wie kann ich dir helfen?
@@ -676,6 +688,7 @@ const sprechButton = document.getElementById('sprechButton');
 const testButton = document.getElementById('testButton');
 const stoppButton = document.getElementById('stoppButton');
 const connectionPill = document.getElementById('connectionPill');
+const teamStatus = document.getElementById('teamStatus');
 
 let recognition = null;
 let ausgewaehlteStimme = null;
@@ -926,11 +939,35 @@ async function askAI(message) {
       );
     }
 
-    connectionPill.textContent =
-      'LLAMA AI · ONLINE';
+   if (data.team === true) {
+  teamStatus.textContent =
+    'LLAMA + CHATGPT · TEAM AKTIV';
 
-    antwort.textContent = data.answer;
+  teamStatus.style.color = '#70ff9a';
+  teamStatus.style.borderColor = '#258c49';
 
+  connectionPill.textContent =
+    'KI-TEAM · ONLINE';
+
+} else if (data.team === false) {
+  teamStatus.textContent =
+    'LLAMA AKTIV · CHATGPT NICHT VERFÜGBAR';
+
+  teamStatus.style.color = '#ffbd70';
+  teamStatus.style.borderColor = '#a66b27';
+
+  connectionPill.textContent =
+    'LLAMA AI · ONLINE';
+
+} else {
+  teamStatus.textContent =
+    'TEAM-STATUS UNBEKANNT';
+
+  connectionPill.textContent =
+    'STATUS UNGEPRÜFT';
+}
+
+antwort.textContent = data.answer;
     await speak(data.answer);
 
   } catch (error) {
