@@ -518,6 +518,7 @@ recognition.onstart = () => {
     }
 
     clearTimeout(hoerTimer);
+    warteAufBefehl = false;
 
     anfrageLaeuft = true;
     feld.value = text;
@@ -533,11 +534,16 @@ recognition.onstart = () => {
     };
 
     recognition.onend = () => {
-        if (freisprechenAktiv && !anfrageLaeuft) {
-            clearTimeout(hoerTimer);
-            hoerTimer = setTimeout(mikrofonStarten, 1000);
-        }
-    };
+    clearTimeout(hoerTimer);
+
+    if (freisprechenAktiv && !anfrageLaeuft) {
+        status.textContent = "SYSTEM BEREIT";
+
+        hoerTimer = setTimeout(() => {
+            mikrofonStarten();
+        }, 1000);
+    }
+};
 
     try {
         recognition.start();
