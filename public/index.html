@@ -484,6 +484,12 @@ function mikrofonStarten() {
     recognition = new Recognition();
     recognition.lang = "de-DE";
     recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+// Nach 10 Sekunden ohne Sprachbeginn neu versuchen
+recognition.onspeechend = () => {
+    console.log("Sprache beendet");
+};
     recognition.interimResults = false;
 
     recognition.onstart = () => {
